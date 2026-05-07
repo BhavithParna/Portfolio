@@ -1,4 +1,5 @@
 "use client";
+import { useRef, useEffect } from "react";
 
 const details = [
   { label: "Email",    value: "bhavithparna6@gmail.com",             href: "mailto:bhavithparna6@gmail.com" },
@@ -8,16 +9,37 @@ const details = [
 ];
 
 export default function Contact() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const reveals = Array.from(el.querySelectorAll<HTMLElement>(".reveal"));
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        reveals.forEach((child, i) => {
+          setTimeout(() => {
+            child.style.opacity = "1";
+            child.style.transform = "translateY(0)";
+          }, i * 75);
+        });
+        obs.disconnect();
+      }
+    }, { threshold: 0.06 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
-    <section id="contact" className="section">
+    <section id="contact" className="section" ref={sectionRef}>
       <div className="wrap">
         <div className="section-head">
           <p className="t-label">Contact</p>
-          <h2 className="t-headline">Let's Talk</h2>
+          <h2 className="t-headline reveal">Let's Talk</h2>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "2fr 3fr", gap: "5rem", alignItems: "start" }} className="contact-grid">
-          <div>
+          <div className="reveal">
             <p className="t-body" style={{ marginBottom: "2rem" }}>
               Open to collaborations, research opportunities, and interesting problems. If it sits
               at the edge of engineering and human health, I want to hear about it.
@@ -27,7 +49,7 @@ export default function Contact() {
             </a>
           </div>
 
-          <div>
+          <div className="reveal">
             <div className="info-table">
               {details.map(d => (
                 <div key={d.label} className="info-row">

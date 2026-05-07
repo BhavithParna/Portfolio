@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRef, useEffect } from "react";
 import { projects } from "@/lib/projects";
 
 /* ─── Texture: SVG noise as data URI for bookcloth grain ─────── */
@@ -345,11 +346,32 @@ function ShelfPlank() {
 
 /* ─── Main export ────────────────────────────────────────────── */
 export default function Library() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const reveals = Array.from(el.querySelectorAll<HTMLElement>(".reveal"));
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        reveals.forEach((child, i) => {
+          setTimeout(() => {
+            child.style.opacity = "1";
+            child.style.transform = "translateY(0)";
+          }, i * 75);
+        });
+        obs.disconnect();
+      }
+    }, { threshold: 0.06 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
-    <section id="library" style={{ borderTop: "1px solid var(--rule)", padding: "6rem 0 7rem" }}>
+    <section id="library" ref={sectionRef} style={{ borderTop: "1px solid var(--rule)", padding: "6rem 0 7rem" }}>
       <div className="wrap">
 
-        <div style={{ marginBottom: "4.5rem" }}>
+        <div className="reveal" style={{ marginBottom: "4.5rem" }}>
           <p className="t-label" style={{ marginBottom: "0.85rem" }}>The Library</p>
           <p className="t-italic" style={{ maxWidth: 480 }}>
             Browse the shelves — every book opens a chapter.
@@ -357,13 +379,13 @@ export default function Library() {
         </div>
 
         {/* ── Projects shelf header ── */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "1.5rem", borderBottom: "1px solid var(--rule)" }}>
+        <div className="reveal" style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "1.5rem", borderBottom: "1px solid var(--rule)" }}>
           <p className="t-label">Selected Work</p>
           <Link href="/projects" className="link-text">Full catalogue →</Link>
         </div>
 
         {/* ── Projects shelf ── */}
-        <div style={{
+        <div className="reveal" style={{
           background: "linear-gradient(to bottom, #0A0704 0%, #080604 60%, #050402 100%)",
           border: "1px solid var(--rule)",
           borderBottom: "none",
@@ -396,12 +418,12 @@ export default function Library() {
         <div style={{ height: "4.5rem" }} />
 
         {/* ── Life shelf header ── */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "1.5rem", borderBottom: "1px solid var(--rule)" }}>
+        <div className="reveal" style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "1.5rem", borderBottom: "1px solid var(--rule)" }}>
           <p className="t-label">Beyond the Lab</p>
         </div>
 
         {/* ── Life shelf ── */}
-        <div style={{
+        <div className="reveal" style={{
           background: "linear-gradient(to bottom, #0A0704 0%, #080604 60%, #050402 100%)",
           border: "1px solid var(--rule)",
           borderBottom: "none",

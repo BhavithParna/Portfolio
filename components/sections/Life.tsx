@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRef, useEffect } from "react";
 
 const cards = [
   {
@@ -23,17 +24,38 @@ const cards = [
 ];
 
 export default function Life() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const reveals = Array.from(el.querySelectorAll<HTMLElement>(".reveal"));
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        reveals.forEach((child, i) => {
+          setTimeout(() => {
+            child.style.opacity = "1";
+            child.style.transform = "translateY(0)";
+          }, i * 70);
+        });
+        obs.disconnect();
+      }
+    }, { threshold: 0.08 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
-    <section id="life" className="section section-alt">
+    <section id="life" className="section section-alt" ref={sectionRef}>
       <div className="wrap">
         <div className="section-head">
           <p className="t-label">Beyond the Lab</p>
-          <h2 className="t-headline">Off the Clock</h2>
+          <h2 className="t-headline reveal">Off the Clock</h2>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.25rem" }} className="life-grid">
           {cards.map(card => (
-            <Link key={card.href} href={card.href} className="life-card">
+            <Link key={card.href} href={card.href} className="life-card reveal">
               <div>
                 <p className="t-label" style={{ marginBottom: "1rem" }}>{card.eyebrow}</p>
                 <h3 className="t-title" style={{ marginBottom: "0.85rem" }}>{card.label}</h3>

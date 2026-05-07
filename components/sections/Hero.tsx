@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useRef } from "react";
 
 /*
   S-curve racing-track lines — mathematically exact parallel semicircles.
@@ -19,7 +18,6 @@ const LINES = [
 function BackgroundArt() {
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-      {/* S-curve line art */}
       <svg
         viewBox="-120 20 1500 960"
         xmlns="http://www.w3.org/2000/svg"
@@ -27,6 +25,7 @@ function BackgroundArt() {
         aria-hidden="true"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
       >
+        {/* Base static lines — shape/color/size unchanged */}
         {LINES.map((d, i) => (
           <path
             key={i}
@@ -35,6 +34,23 @@ function BackgroundArt() {
             strokeWidth="1.5"
             fill="none"
             strokeLinecap="round"
+          />
+        ))}
+
+        {/* Electricity: accent dot flowing along each track */}
+        {LINES.map((d, i) => (
+          <path
+            key={`glow-${i}`}
+            d={d}
+            stroke="rgba(200,109,83,0.6)"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            pathLength="1"
+            style={{
+              strokeDasharray: "0.05 0.95",
+              animation: `race-glow ${5.5 + i * 0.65}s linear ${-(i * 1.1)}s infinite`,
+            }}
           />
         ))}
       </svg>
@@ -55,44 +71,29 @@ function BackgroundArt() {
 }
 
 export default function Hero() {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.opacity = "0";
-    el.style.transform = "translateY(22px)";
-    const t = setTimeout(() => {
-      el.style.transition = "opacity 1s ease, transform 1s ease";
-      el.style.opacity = "1";
-      el.style.transform = "translateY(0)";
-    }, 100);
-    return () => clearTimeout(t);
-  }, []);
-
   return (
     <section className="hero" id="hero" style={{ position: "relative" }}>
       <BackgroundArt />
 
-      <div className="hero-content" ref={ref} style={{ position: "relative", zIndex: 1 }}>
+      <div className="hero-content" style={{ position: "relative", zIndex: 1 }}>
 
-        <p className="t-label" style={{ marginBottom: "2.5rem" }}>
+        <p className="t-label hero-item" style={{ marginBottom: "2.5rem", animationDelay: "0.1s" }}>
           Bhavith Parna &nbsp;·&nbsp; Hyderabad, India &nbsp;·&nbsp; B.Tech Biomedical Engineering
         </p>
 
-        <h1 className="t-display" style={{ maxWidth: 820, marginBottom: "2rem" }}>
+        <h1 className="t-display hero-item" style={{ maxWidth: 820, marginBottom: "2rem", animationDelay: "0.25s" }}>
           Building at the<br />
           <em>edge of the</em><br />
           human body.
         </h1>
 
-        <p className="t-body" style={{ maxWidth: 520, marginBottom: "3rem", fontSize: "1.05rem" }}>
+        <p className="t-body hero-item" style={{ maxWidth: 520, marginBottom: "3rem", fontSize: "1.05rem", animationDelay: "0.4s" }}>
           I work at the intersection of neurotechnology, embedded hardware, and clinical medicine —
           engineering systems where the stakes are real and the hardware has to function.
         </p>
 
-        <div style={{ display: "flex", gap: "0.85rem", flexWrap: "wrap", paddingBottom: "3.5rem" }}>
-          <a href="#library" className="btn btn-filled">Explore the Work</a>
+        <div className="hero-item" style={{ display: "flex", gap: "0.85rem", flexWrap: "wrap", paddingBottom: "3.5rem", animationDelay: "0.55s" }}>
+          <a href="#library" className="btn btn-filled btn-pulse">Explore the Work</a>
           <a href="/bhavith-parna-cv.pdf" download className="btn btn-outlined">Download CV</a>
         </div>
 
