@@ -1,0 +1,126 @@
+export type Project = {
+  slug: string;
+  title: string;
+  context: string;
+  dates: string;
+  summary: string;
+  bullets: string[];
+  tags: string[];
+  category: string[];
+  featured: boolean;
+  award?: string;
+};
+
+export const projects: Project[] = [
+  {
+    slug: "bci-drone-controller",
+    title: "Non-Invasive BCI Drone Controller",
+    context: "Internship",
+    dates: "Feb 2026 – Present",
+    summary: "An advanced Brain-Computer Interface project bridging neurological signals and physical hardware control — building a real-time system to pilot a drone using EEG data.",
+    bullets: [
+      "Real-time BCI drone control via EEG using OpenBCI Cyton board and Lab Streaming Layer (LSL)",
+      "Architected a scalable Python-based ML pipeline to process mVEP stimuli evoked by PsychoPy, classifying high-fidelity brainwaves",
+    ],
+    tags: ["Python", "OpenBCI", "LSL", "PsychoPy", "EEG", "Machine Learning"],
+    category: ["Neurotech / BCI", "Internship"],
+    featured: true,
+  },
+  {
+    slug: "gamified-rehab-cerebral-palsy",
+    title: "Gamified Rehab Device for Cerebral Palsy",
+    context: "Anveshana Competition",
+    dates: "Jan 2026",
+    summary: "A wearable rehabilitation tool that gamifies physical therapy for individuals with Cerebral Palsy. Built with direct clinical input from a practising doctor.",
+    bullets: [
+      "Led a team of four through design and development",
+      "Custom-engineered to meet specific clinical needs of the doctor's patients",
+      "Successfully gamified physical therapy — making it highly engaging for CP patients",
+      "Received an Appreciation Award for the project's impact",
+    ],
+    tags: ["Wearables", "Biomedical", "Hardware", "Gamification", "Rehabilitation"],
+    category: ["Biomedical", "Competition"],
+    featured: true,
+    award: "Appreciation Award — Anveshana Competition",
+  },
+  {
+    slug: "smart-helmet",
+    title: "Smart Helmet System",
+    context: "Minor Project",
+    dates: "2025",
+    summary: "A smart helmet equipped with a comprehensive sensor network for real-time safety monitoring and automated crash detection.",
+    bullets: [
+      "Hardware integration: GPS, accelerometers, alcohol detection sensors",
+      "Automated crash detection protocol with API-driven emergency alerts",
+      "Custom web dashboard for live sensor data visualization",
+    ],
+    tags: ["IoT", "Arduino", "GPS", "API", "Web Dashboard", "Embedded Systems"],
+    category: ["IoT & Embedded"],
+    featured: true,
+  },
+  {
+    slug: "visual-reaction-timer",
+    title: "Visual Reaction Timer",
+    context: "Third Year Project",
+    dates: "Jan – Mar 2026",
+    summary: "A portable IoT device engineered to test, track, and analyze visual reaction times with high precision. Includes a real-time web dashboard for cognitive performance tracking.",
+    bullets: [
+      "Led a team of two through the full build",
+      "Engineered complete system architecture: custom hardware triggers + web-based frontend dashboard",
+      "Real-time cognitive performance tracking and data visualization",
+    ],
+    tags: ["IoT", "Hardware", "Python", "Web Dashboard", "Embedded Systems"],
+    category: ["IoT & Embedded", "Academic"],
+    featured: false,
+  },
+  {
+    slug: "applied-signal-processing-bci",
+    title: "Applied Signal Processing for Visual BCI",
+    context: "Research",
+    dates: "Feb 2026 – Present",
+    summary: "Deep-dive research into neurological signal processing — capturing and interpreting brain responses to visual stimuli using custom PsychoPy pipelines.",
+    bullets: [
+      "Advanced Visual Neuroinformatics research",
+      "Eliciting, capturing, and processing SSVEP and mVEP visual evoked potentials",
+      "Custom PsychoPy experimental pipelines",
+    ],
+    tags: ["Python", "PsychoPy", "SSVEP", "mVEP", "Signal Processing", "EEG"],
+    category: ["Neurotech / BCI", "Research"],
+    featured: false,
+  },
+  {
+    slug: "uav-payload-precision-agriculture",
+    title: "Modular UAV Payload for Precision Agriculture",
+    context: "Smart India Hackathon (SIH)",
+    dates: "Nov 2024",
+    summary: "A modular drone payload designed for precision agriculture — combining remote sensing capabilities with targeted aerial irrigation.",
+    bullets: [
+      "Collaborated with a 6-person multidisciplinary team",
+      "Developed the high-level framework for a dual-purpose system",
+      "Integrating remote sensing and targeted aerial irrigation to optimise farmland management",
+    ],
+    tags: ["UAV", "Drones", "IoT", "Remote Sensing", "Agriculture"],
+    category: ["IoT & Embedded", "Hackathon"],
+    featured: false,
+  },
+  {
+    slug: "hydro-plantation-geotagging",
+    title: "Geotagging of Plantation in Hydro Project Catchment",
+    context: "Smart India Hackathon (SIH) 2023",
+    dates: "Dec 2023",
+    summary: "A suspended mobile IoT unit for geotagging and monitoring plantations within hydro project catchment areas. SIH 2023 Finalist.",
+    bullets: [
+      "SIH 2023 Finalist — engineered a suspended mobile IoT unit",
+      "Raspberry Pi + camera systems with image recognition algorithms",
+      "Colour variation analysis for tracking plant growth rates",
+      "Automated surveillance with anomaly detection and real-time alerts",
+    ],
+    tags: ["Raspberry Pi", "Computer Vision", "IoT", "Image Recognition", "Python"],
+    category: ["IoT & Embedded", "Hackathon"],
+    featured: false,
+    award: "SIH 2023 Finalist",
+  },
+];
+
+export const featuredProjects = projects.filter(p => p.featured);
+export const allCategories = ["All", "Neurotech / BCI", "IoT & Embedded", "Biomedical", "Hackathon", "Research"];
