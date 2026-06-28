@@ -2,9 +2,9 @@
 import { useRef, useEffect } from "react";
 
 const details = [
-  { label: "Email",    value: "bhavithparna6@gmail.com",             href: "mailto:bhavithparna6@gmail.com" },
-  { label: "Location", value: "Hyderabad, Telangana, India",          href: null },
-  { label: "GitHub",   value: "github.com/BhavithParna",             href: "https://github.com/BhavithParna" },
+  { label: "Email",    value: "bhavithparna6@gmail.com",                 href: "mailto:bhavithparna6@gmail.com" },
+  { label: "Location", value: "Hyderabad, Telangana, India",             href: null },
+  { label: "GitHub",   value: "github.com/BhavithParna",                 href: "https://github.com/BhavithParna" },
   { label: "LinkedIn", value: "linkedin.com/in/bhavith-parna-2920b0178", href: "https://www.linkedin.com/in/bhavith-parna-2920b0178/" },
 ];
 
@@ -14,14 +14,11 @@ export default function Contact() {
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
-    const reveals = Array.from(el.querySelectorAll<HTMLElement>(".reveal"));
+    const reveals = Array.from(el.querySelectorAll<HTMLElement>(".fade"));
     const obs = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         reveals.forEach((child, i) => {
-          setTimeout(() => {
-            child.style.opacity = "1";
-            child.style.transform = "translateY(0)";
-          }, i * 75);
+          setTimeout(() => { child.style.opacity = "1"; child.style.transform = "none"; }, i * 90);
         });
         obs.disconnect();
       }
@@ -31,52 +28,56 @@ export default function Contact() {
   }, []);
 
   return (
-    <section id="contact" className="section" ref={sectionRef}>
-      <div className="wrap">
-        <div className="section-head">
-          <p className="t-label">Contact</p>
-          <h2 className="t-headline reveal">Let's Talk</h2>
-        </div>
+    <>
+      <style>{`#contact .fade{opacity:0;transform:translateY(16px);transition:opacity 0.7s ease,transform 0.7s ease}`}</style>
+      <section id="contact" className="sb-page" ref={sectionRef}>
+        <span className="sb-deckle sb-deckle-top" />
+        <div className="sb-wrap">
+          <p className="sb-eyebrow fade">Drop me a line</p>
+          <h2 className="sb-name fade" style={{ fontSize: "clamp(2.5rem,6vw,4.25rem)" }}>Let&apos;s talk.</h2>
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 3fr", gap: "5rem", alignItems: "start" }} className="contact-grid">
-          <div className="reveal">
-            <p className="t-body" style={{ marginBottom: "2rem" }}>
-              Open to collaborations, research opportunities, and interesting problems. If it sits
-              at the edge of engineering and human health, I want to hear about it.
-            </p>
-            <a href="mailto:bhavithparna6@gmail.com" className="btn btn-filled" style={{ display: "inline-block", marginBottom: "1rem" }}>
-              Send an Email
-            </a>
-          </div>
+          <div className="sb-postcard fade">
+            <div className="sb-postcard-left">
+              <p className="sb-postcard-msg">
+                Open to collaborations, research, and interesting problems. If it sits at the edge
+                of engineering and human health, I want to hear about it.
+              </p>
+              <a href="mailto:bhavithparna6@gmail.com" className="sb-btn sb-btn-primary">Send an email ✉</a>
+              <div style={{ marginTop: "2.25rem" }}>
+                <span className="sb-sign">Bhavith</span>
+              </div>
+            </div>
 
-          <div className="reveal">
-            <div className="info-table">
-              {details.map(d => (
-                <div key={d.label} className="info-row">
-                  <div className="info-label">{d.label}</div>
-                  <div className="info-value">
-                    {d.href
-                      ? <a href={d.href} target={d.href.startsWith("mailto") ? undefined : "_blank"} rel="noopener noreferrer">{d.value}</a>
-                      : d.value
-                    }
-                  </div>
+            <div className="sb-postcard-right">
+              <span className="sb-tape sb-tape-tl sb-tape-terra" style={{ left: "auto", right: "18px" }} />
+              <div className="sb-postage">
+                <div className="sb-postage-inner">
+                  <b>HYD</b>
+                  <span>India · 2026</span>
                 </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "1.25rem" }}>
-              <a href="/bhavith-parna-cv.pdf" download className="btn btn-outlined" style={{ display: "block", textAlign: "center" }}>
-                Download CV
-              </a>
+              </div>
+              <dl style={{ marginTop: "6.5rem" }}>
+                {details.map(d => (
+                  <div className="sb-row" key={d.label}>
+                    <dt>{d.label}</dt>
+                    <dd>
+                      {d.href
+                        ? <a href={d.href} target={d.href.startsWith("mailto") ? undefined : "_blank"} rel="noopener noreferrer">{d.value}</a>
+                        : d.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <a href="/bhavith-parna-cv.pdf" download className="sb-btn" style={{ marginTop: "1.4rem" }}>Download CV ↓</a>
             </div>
           </div>
-        </div>
 
-        <div style={{ marginTop: "5.5rem", paddingTop: "2rem", borderTop: "1px solid var(--rule)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
-          <p style={{ fontFamily: "'EB Garamond', serif", fontStyle: "italic", fontSize: "1.05rem", color: "var(--ink-light)" }}>Bhavith Parna</p>
-          <p className="t-label">© 2026 · Hyderabad, India</p>
+          <div className="sb-foot fade">
+            <span>Bhavith Parna</span>
+            <span>© 2026 · Hyderabad, India</span>
+          </div>
         </div>
-      </div>
-      <style>{`@media(max-width:768px){.contact-grid{grid-template-columns:1fr!important;gap:2.5rem!important}}`}</style>
-    </section>
+      </section>
+    </>
   );
 }

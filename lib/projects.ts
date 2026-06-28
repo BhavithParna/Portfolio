@@ -44,6 +44,21 @@ export const projects: Project[] = [
     award: "Appreciation Award — Anveshana Competition",
   },
   {
+    slug: "iith-teer-device",
+    title: "TEER Measurement Device",
+    context: "IITH Internship",
+    dates: "2025",
+    summary: "A benchtop instrument built during a research internship at IIT Hyderabad to measure Trans-Epithelial Electrical Resistance (TEER) — quantifying the barrier integrity of cell-culture monolayers for in-vitro tissue models.",
+    bullets: [
+      "Research internship at the Indian Institute of Technology, Hyderabad (IITH)",
+      "Measures Trans-Epithelial Electrical Resistance to assess cell-monolayer barrier integrity",
+      "Custom low-noise analog front-end and electrode interface for impedance measurement",
+    ],
+    tags: ["Biomedical", "Instrumentation", "Impedance", "Electronics", "Cell Culture"],
+    category: ["Biomedical", "Internship"],
+    featured: true,
+  },
+  {
     slug: "smart-helmet",
     title: "Smart Helmet System",
     context: "Minor Project",

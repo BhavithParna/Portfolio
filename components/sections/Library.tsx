@@ -9,52 +9,52 @@ const NOISE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 /* ─── Per-book visual props ──────────────────────────────────── */
 const bookMeta = [
   {
-    // Deep Burgundy
+    // Terracotta
     w: 128, h: 306,
-    gradient: "linear-gradient(to right, #1C0404 0%, #1C0404 6%, #340A0A 16%, #580E0E 30%, #6E1414 50%, #580E0E 70%, #340A0A 84%, #1C0404 94%, #1C0404 100%)",
-    foil: "#D4A848",
+    gradient: "linear-gradient(to right, #5E2113 0%, #5E2113 6%, #8E3A22 16%, #B05030 30%, #C0613F 50%, #B05030 70%, #8E3A22 84%, #5E2113 94%, #5E2113 100%)",
+    foil: "#F2E4C0",
     mb: 0,
   },
   {
-    // Forest Green
+    // Vintage Teal
     w: 110, h: 288,
-    gradient: "linear-gradient(to right, #061208 0%, #061208 6%, #0C1E0E 16%, #142E18 30%, #1A3C20 50%, #142E18 70%, #0C1E0E 84%, #061208 94%, #061208 100%)",
-    foil: "#A8C490",
+    gradient: "linear-gradient(to right, #123A36 0%, #123A36 6%, #1C4A44 16%, #276059 30%, #2F6E66 50%, #276059 70%, #1C4A44 84%, #123A36 94%, #123A36 100%)",
+    foil: "#EAD9A8",
     mb: 4,
   },
   {
-    // Midnight Blue
+    // Mustard
     w: 120, h: 316,
-    gradient: "linear-gradient(to right, #060818 0%, #060818 6%, #0C1028 16%, #10183C 30%, #162048 50%, #10183C 70%, #0C1028 84%, #060818 94%, #060818 100%)",
-    foil: "#A0B8D4",
+    gradient: "linear-gradient(to right, #6E4A12 0%, #6E4A12 6%, #946616 16%, #B0801F 30%, #C99A3B 50%, #B0801F 70%, #946616 84%, #6E4A12 94%, #6E4A12 100%)",
+    foil: "#4A3618",
     mb: 2,
   },
   {
-    // Slate
+    // Olive
     w: 104, h: 294,
-    gradient: "linear-gradient(to right, #0A0E14 0%, #0A0E14 6%, #121820 16%, #1A2430 30%, #20303C 50%, #1A2430 70%, #121820 84%, #0A0E14 94%, #0A0E14 100%)",
-    foil: "#B4C0C8",
+    gradient: "linear-gradient(to right, #3A3A16 0%, #3A3A16 6%, #51511F 16%, #6A6A2E 30%, #7E7E3A 50%, #6A6A2E 70%, #51511F 84%, #3A3A16 94%, #3A3A16 100%)",
+    foil: "#F0E6C2",
     mb: 6,
   },
   {
-    // Espresso
+    // Bone / cream cloth
     w: 96, h: 280,
-    gradient: "linear-gradient(to right, #0E0602 0%, #0E0602 6%, #1C0C04 16%, #2C1008 30%, #3A1608 50%, #2C1008 70%, #1C0C04 84%, #0E0602 94%, #0E0602 100%)",
-    foil: "#C8A84A",
+    gradient: "linear-gradient(to right, #B3A078 0%, #B3A078 6%, #CDBB90 16%, #DFD0A6 30%, #ECDFBC 50%, #DFD0A6 70%, #CDBB90 84%, #B3A078 94%, #B3A078 100%)",
+    foil: "#5A4632",
     mb: 0,
   },
   {
-    // Olive
+    // Dusty Blue
     w: 114, h: 300,
-    gradient: "linear-gradient(to right, #0A0C04 0%, #0A0C04 6%, #141804 16%, #1E2408 30%, #262E0A 50%, #1E2408 70%, #141804 84%, #0A0C04 94%, #0A0C04 100%)",
-    foil: "#C0B860",
+    gradient: "linear-gradient(to right, #233A4A 0%, #233A4A 6%, #324E62 16%, #466A82 30%, #5A7E96 50%, #466A82 70%, #324E62 84%, #233A4A 94%, #233A4A 100%)",
+    foil: "#F0E6C2",
     mb: 3,
   },
   {
-    // Dusty Plum
+    // Plum
     w: 108, h: 290,
-    gradient: "linear-gradient(to right, #0E0410 0%, #0E0410 6%, #180818 16%, #240C22 30%, #300E2C 50%, #240C22 70%, #180818 84%, #0E0410 94%, #0E0410 100%)",
-    foil: "#C4A8C0",
+    gradient: "linear-gradient(to right, #3A1A32 0%, #3A1A32 6%, #512846 16%, #6A375C 30%, #7E3E6E 50%, #6A375C 70%, #512846 84%, #3A1A32 94%, #3A1A32 100%)",
+    foil: "#EBD6C0",
     mb: 5,
   },
 ];
@@ -66,8 +66,8 @@ const lifeMeta = [
     title: "Off the Clock",
     sub: "Hobbies",
     w: 118, h: 296, mb: 3,
-    gradient: "linear-gradient(to right, #0E0604 0%, #0E0604 6%, #1E0C06 16%, #300E08 30%, #3C1208 50%, #300E08 70%, #1E0C06 84%, #0E0604 94%, #0E0604 100%)",
-    foil: "#C8A050",
+    gradient: "linear-gradient(to right, #6E3414 0%, #6E3414 6%, #94481E 16%, #B85E2A 30%, #D07038 50%, #B85E2A 70%, #94481E 84%, #6E3414 94%, #6E3414 100%)",
+    foil: "#F2E4C0",
     italic: false,
   },
   {
@@ -75,8 +75,8 @@ const lifeMeta = [
     title: "The Soundtrack",
     sub: "Music",
     w: 128, h: 312, mb: 0,
-    gradient: "linear-gradient(to right, #040410 0%, #040410 6%, #080820 16%, #0C1030 30%, #10143C 50%, #0C1030 70%, #080820 84%, #040410 94%, #040410 100%)",
-    foil: "#9898DC",
+    gradient: "linear-gradient(to right, #1A3A48 0%, #1A3A48 6%, #274E5E 16%, #386A7E 30%, #4A8296 50%, #386A7E 70%, #274E5E 84%, #1A3A48 94%, #1A3A48 100%)",
+    foil: "#EAD9A8",
     italic: false,
   },
   {
@@ -84,9 +84,18 @@ const lifeMeta = [
     title: "Luca",
     sub: "The Good Boy",
     w: 108, h: 304, mb: 5,
-    gradient: "linear-gradient(to right, #100602 0%, #100602 6%, #1E0A04 16%, #2C0E06 30%, #381008 50%, #2C0E06 70%, #1E0A04 84%, #100602 94%, #100602 100%)",
-    foil: "#E0A060",
+    gradient: "linear-gradient(to right, #6E5212 0%, #6E5212 6%, #927018 16%, #B58E22 30%, #D0A634 50%, #B58E22 70%, #927018 84%, #6E5212 94%, #6E5212 100%)",
+    foil: "#3A2C12",
     italic: true,
+  },
+  {
+    href: "/horror",
+    title: "Horror",
+    sub: "After Dark",
+    w: 116, h: 298, mb: 2,
+    gradient: "linear-gradient(to right, #2A0808 0%, #2A0808 6%, #460E0C 16%, #661614 30%, #8A2420 50%, #661614 70%, #460E0C 84%, #2A0808 94%, #2A0808 100%)",
+    foil: "#E0C29A",
+    italic: false,
   },
 ];
 
@@ -334,12 +343,12 @@ function ShelfPlank() {
   return (
     <div style={{
       height: 26,
-      background: "linear-gradient(to bottom, #4A3420 0%, #3A2614 30%, #281A0C 65%, #160E04 100%)",
-      borderLeft: "1px solid rgba(255,255,255,0.06)",
-      borderRight: "1px solid rgba(255,255,255,0.06)",
-      borderBottom: "1px solid rgba(0,0,0,0.6)",
-      borderTop: "2px solid #5A4028",
-      boxShadow: "0 6px 20px rgba(0,0,0,0.7), 0 12px 40px rgba(0,0,0,0.4)",
+      background: "linear-gradient(to bottom, #8A6238 0%, #74502C 30%, #5E3F20 65%, #4A3016 100%)",
+      borderLeft: "1px solid rgba(255,255,255,0.08)",
+      borderRight: "1px solid rgba(0,0,0,0.25)",
+      borderBottom: "1px solid rgba(0,0,0,0.45)",
+      borderTop: "2px solid #A07A4A",
+      boxShadow: "0 6px 18px rgba(60,40,20,0.4), 0 12px 34px rgba(60,40,20,0.25)",
     }} />
   );
 }
@@ -368,33 +377,26 @@ export default function Library() {
   }, []);
 
   return (
-    <section id="library" ref={sectionRef} style={{ borderTop: "1px solid var(--rule)", padding: "6rem 0 7rem" }}>
-      <div className="wrap">
+    <section id="library" ref={sectionRef} className="sb-page" style={{ padding: "6.5rem 0 7rem" }}>
+      <span className="sb-deckle sb-deckle-top" />
+      <span className="sb-deckle sb-deckle-bottom" />
+      <div className="sb-wrap">
 
-        <div className="reveal" style={{ marginBottom: "4.5rem" }}>
-          <p className="t-label" style={{ marginBottom: "0.85rem" }}>The Library</p>
-          <p className="t-italic" style={{ maxWidth: 480 }}>
+        <div className="reveal" style={{ marginBottom: "3.5rem" }}>
+          <p className="sb-eyebrow">The Library</p>
+          <p style={{ fontFamily: "'EB Garamond', serif", fontStyle: "italic", fontSize: "1.4rem", color: "var(--sb-ink-soft)", maxWidth: 480 }}>
             Browse the shelves — every book opens a chapter.
           </p>
         </div>
 
         {/* ── Projects shelf header ── */}
-        <div className="reveal" style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "1.5rem", borderBottom: "1px solid var(--rule)" }}>
-          <p className="t-label">Selected Work</p>
-          <Link href="/projects" className="link-text">Full catalogue →</Link>
+        <div className="reveal sb-shelf-head">
+          <p className="sb-shelf-label">Selected Work</p>
+          <Link href="/projects" className="sb-shelf-link">Full catalogue →</Link>
         </div>
 
         {/* ── Projects shelf ── */}
-        <div className="reveal" style={{
-          background: "linear-gradient(to bottom, #0A0704 0%, #080604 60%, #050402 100%)",
-          border: "1px solid var(--rule)",
-          borderBottom: "none",
-          padding: "3.5rem 2rem 0",
-          display: "flex",
-          alignItems: "flex-end",
-          gap: "8px",
-          overflowX: "auto",
-        }}>
+        <div className="reveal sb-shelf" style={{ overflowX: "auto" }}>
           {projects.map((p, i) => {
             const m = bookMeta[i % bookMeta.length];
             return (
@@ -418,20 +420,12 @@ export default function Library() {
         <div style={{ height: "4.5rem" }} />
 
         {/* ── Life shelf header ── */}
-        <div className="reveal" style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "1.5rem", borderBottom: "1px solid var(--rule)" }}>
-          <p className="t-label">Beyond the Lab</p>
+        <div className="reveal sb-shelf-head">
+          <p className="sb-shelf-label">Beyond the Lab</p>
         </div>
 
         {/* ── Life shelf ── */}
-        <div className="reveal" style={{
-          background: "linear-gradient(to bottom, #0A0704 0%, #080604 60%, #050402 100%)",
-          border: "1px solid var(--rule)",
-          borderBottom: "none",
-          padding: "3.5rem 2rem 0",
-          display: "flex",
-          alignItems: "flex-end",
-          gap: "8px",
-        }}>
+        <div className="reveal sb-shelf">
           {lifeMeta.map(b => (
             <SpineBook
               key={b.href}
