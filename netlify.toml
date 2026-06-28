@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Official Netlify adapter for Next.js (App Router / SSR support)
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
