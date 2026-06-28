@@ -231,3 +231,46 @@ Each entry records the date, a summary of the change, and the files affected.
   not stored) — advised to revoke. SSH key offered, not yet set up.
 - **To verify hosting:** open `https://<site>.netlify.app/intro.mp4` — should
   stream (200), not 404. 404 ⇒ stale/manual deploy; re-link repo for auto-deploy.
+
+### 2026-06-28 — Intro autoplay fix + hosting diagnosis
+- **Site is live at `bhavithparna.netlify.app`** (Netlify, auto-deploys from
+  GitHub `main`, latest deploy Published).
+- **Video "doesn't load" diagnosis:** NOT a serving problem — verified
+  `bhavithparna.netlify.app/intro.mp4` returns 200, `video/mp4`, correct size
+  (2.24MB faststart file), and range requests work (206). Root cause was the
+  classic React quirk: `<video muted>` doesn't reliably apply `muted`, so
+  browsers blocked muted-autoplay → black screen.
+- **Fix (committed `4d600f0`, pushed):** in `VideoIntro.tsx`, set `v.muted`/
+  `v.defaultMuted` imperatively in an effect and call `v.play()`; if autoplay
+  is still blocked, show a "Tap to enter" button (`.vi-tap`) so it can never
+  stick on black. Confirm on the live site after the deploy publishes.
+- **Files:** `components/VideoIntro.tsx`, `app/globals.css` (`.vi-tap`).
+- **SSH key:** PARKED per user. Key generated at `~/.ssh/id_ed25519`
+  (no passphrase), added to GitHub, and `ssh -T git@github.com` authenticated
+  successfully ("Hi BhavithParna!"). But git-over-SSH from the assistant
+  sandbox hangs on a GUI askpass (ksshaskpass) quirk, so remote was set back to
+  **HTTPS** to keep token-based pushes working. From the user's own terminal,
+  `git push` over SSH would work (key is valid); revisit later if desired.
+- **Pending:** user still needs to **revoke the PAT** pasted earlier in chat.
+
+### 2026-06-28 — Fly-between "stage" navigation (no scroll between sections)
+- **What:** Replaced the vertical-scroll home (About→Library→Contact stacked)
+  with a fixed full-viewport **stage** that swaps between three scenes via
+  animated character nav (framer-motion):
+  - Home (About): **paper airplane** → Library, **walking mailman** → Contact
+  - Library: **paper airplane** → back Home, **mail truck** → Contact
+  - Contact: **paper airplane** → back Home
+  Characters are hand-built inline SVGs (`components/StageNav.tsx`:
+  `PaperPlane`/`Mailman`/`MailTruck`) with idle CSS animations (plane bob +
+  dashed trail, mailman walk bob + leg swing, truck bob + spinning wheels) and
+  framer-motion fly-in/out. Scene controller is `app/page.tsx` (client,
+  `AnimatePresence`). Scenes don't scroll between each other; each scene can
+  scroll internally if its content overflows.
+- **Why:** User wanted a playful non-scroll format — fly to the Library by
+  paper airplane, mailman/mail-truck carries you to Contact.
+- **Files:** `app/page.tsx` (rewritten as scene controller),
+  `components/StageNav.tsx` (new), `app/globals.css` (`.stage`/`.scene`/
+  `.nav-char` + keyframes).
+- **Notes:** global dark `Nav` stays hidden on the stage automatically (it only
+  shows after window scroll, which never happens here). Character SVG art is a
+  first pass — refine positions/illustration after user reacts. Not yet pushed.

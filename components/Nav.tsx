@@ -15,11 +15,12 @@ export default function Nav() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (pathname !== "/") { setVisible(true); return; }
-    const onScroll = () => setVisible(window.scrollY > window.innerHeight * 0.7);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    setVisible(true);
   }, [pathname]);
+
+  // The landing page is a fly-between "stage" with its own character nav —
+  // no top bar there.
+  if (pathname === "/") return null;
 
   return (
     <>

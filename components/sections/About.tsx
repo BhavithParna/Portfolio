@@ -28,7 +28,7 @@ export default function About() {
   return (
     <>
       <style>{`#about .fade{opacity:0;transform:translateY(16px);transition:opacity 0.7s ease,transform 0.7s ease}`}</style>
-      <section id="about" className="sb-page" ref={ref} style={{ paddingTop: "8rem", paddingBottom: "7rem" }}>
+      <section id="about" className="sb-page" ref={ref} style={{ paddingTop: "2.5rem", paddingBottom: "3rem" }}>
         <span className="sb-deckle sb-deckle-bottom" />
 
         <div className="sb-wrap">
