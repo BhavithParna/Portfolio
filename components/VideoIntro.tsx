@@ -3,21 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 
 /*
-  VideoIntro — plays a fullscreen intro clip (you writing "BHAVITH" on
-  frosted glass), then crossfades away to reveal the site.
+  VideoIntro — plays a fullscreen intro clip, then crossfades away to reveal
+  the site.
 
-  Drop your recording in /public as intro.mp4 (and optionally intro.webm).
-  - Autoplays muted (browsers block autoplay with sound), inline on mobile.
+  - Autoplays muted + inline. `muted` is also set imperatively because React
+    doesn't always apply the attribute in time, which makes browsers block
+    muted-autoplay (black screen). If autoplay is still blocked we show a
+    "tap to enter" affordance so it can never get stuck.
   - When the clip ends it fades out and unmounts; the page is revealed.
   - "Skip" lets impatient visitors jump straight in.
-  - If the video is missing or fails to load, we skip straight to the site
-    so the page is never stuck behind a black screen.
+  - If the video is missing/fails, we skip straight to the site.
 */
 
 type Stage = "playing" | "leaving" | "done";
 
 export default function VideoIntro() {
   const [stage, setStage] = useState<Stage>("playing");
+  const [needsTap, setNeedsTap] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Lock scroll while the intro is up.
@@ -28,9 +30,29 @@ export default function VideoIntro() {
     return () => { document.body.style.overflow = prev; };
   }, [stage]);
 
-  // Begin the fade, then unmount after it finishes.
-  const finish = () => {
-    setStage((s) => (s === "playing" ? "leaving" : s));
+  // Force muted + try to play (works around React's flaky `muted` attribute).
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    const tryPlay = () => {
+      v.play()
+        .then(() => setNeedsTap(false))
+        .catch(() => setNeedsTap(true)); // autoplay blocked → offer a tap
+    };
+    if (v.readyState >= 2) tryPlay();
+    else v.addEventListener("canplay", tryPlay, { once: true });
+    return () => v.removeEventListener("canplay", tryPlay);
+  }, []);
+
+  const finish = () => setStage((s) => (s === "playing" ? "leaving" : s));
+
+  const playFromTap = () => {
+    const v = videoRef.current;
+    if (!v) return finish();
+    v.muted = true;
+    v.play().then(() => setNeedsTap(false)).catch(() => finish());
   };
 
   useEffect(() => {
@@ -55,6 +77,12 @@ export default function VideoIntro() {
       >
         <source src="/intro.mp4" type="video/mp4" />
       </video>
+
+      {needsTap && (
+        <button className="vi-tap" onClick={playFromTap} aria-label="Enter">
+          Tap to enter
+        </button>
+      )}
 
       <button className="vi-skip" onClick={finish}>
         Skip

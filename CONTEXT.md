@@ -214,3 +214,20 @@ Each entry records the date, a summary of the change, and the files affected.
 - **Still dark (not yet converted):** project detail pages
   `/projects/[slug]`, and inner pages `/hobbies`, `/music`, `/luca`, `/horror`.
   Nav is still the dark bar over cream.
+
+### 2026-06-28 — Hosting + intro video fixes
+- **What:**
+  1. Pushed everything to GitHub `BhavithParna/Portfolio` `main`.
+  2. Added `netlify.toml` (@netlify/plugin-nextjs, NODE_VERSION 20).
+  3. Removed the non-existent `/intro.webm` `<source>` from VideoIntro.
+  4. Sped intro to 1.5x (26.5s → 17.6s), re-cut from `intro-source.mp4`.
+  5. Re-encoded intro with `-movflags +faststart` (moov atom at front) so it
+     streams immediately when hosted — fix for "video doesn't load" on Netlify.
+- **Why:** User hosting on Netlify; video wasn't loading (old deploy predated
+  the file / non-faststart mp4 stalls over HTTP).
+- **Files:** `netlify.toml` (new), `components/VideoIntro.tsx`,
+  `public/intro.mp4` (re-encoded).
+- **Auth note:** user pasted a GitHub PAT in chat (used for pushes, one-off URL,
+  not stored) — advised to revoke. SSH key offered, not yet set up.
+- **To verify hosting:** open `https://<site>.netlify.app/intro.mp4` — should
+  stream (200), not 404. 404 ⇒ stale/manual deploy; re-link repo for auto-deploy.

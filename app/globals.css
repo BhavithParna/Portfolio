@@ -1069,3 +1069,17 @@ body {
   .sb-proj-cover { min-height: 120px; }
   .sb-proj-info { border-left: none; border-top: 1px dashed var(--paper-dk); }
 }
+
+/* Tap-to-enter fallback when a browser blocks muted autoplay */
+.vi-tap {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: #EDE8DF; background: rgba(13,10,8,0.5);
+  border: 1px solid rgba(237,232,223,0.4);
+  border-radius: 999px; padding: 1rem 2rem; cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.vi-tap:hover { border-color: var(--accent); color: #fff; }
