@@ -1097,45 +1097,248 @@ body {
 /* Character layer sits above the scene */
 .stage-chars { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
 
-.nav-char {
-  position: absolute; pointer-events: auto;
-  background: none; border: none; padding: 0; cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+/* ─── Home-page extras: ink-grain shader + coffee ticker ─────── */
+
+.sb-coffeectr {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: var(--paper-lt, #F6EFDD);
+  border: 1.5px solid rgba(51, 39, 28, 0.5);
+  border-radius: 3px;
+  padding: 0.9rem 1.5rem 0.85rem;
+  transform: rotate(-0.5deg);
+  box-shadow: 0 6px 18px rgba(60, 40, 20, 0.12);
 }
-.nav-char-label {
-  font-family: 'Caveat', cursive; font-size: 1.45rem; line-height: 1;
-  color: #33271C; background: rgba(246,239,221,0.75);
-  padding: 0.15rem 0.6rem; border-radius: 3px; transform: rotate(-3deg);
-  white-space: nowrap; box-shadow: 0 2px 6px rgba(60,40,20,0.14);
+.sb-coffeectr-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6E5C49;
+}
+.sb-coffeectr-num {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.7rem, 2.4vw, 2.4rem);
+  line-height: 1;
+  color: #BC5A3C;
+}
+.sb-coffeectr-note {
+  font-family: 'Caveat', cursive;
+  font-size: 1.15rem;
+  line-height: 1.1;
+  color: #2F6E66;
 }
 
-.nav-plane-home { top: 16%; right: 7%; }
-.nav-plane-back { top: 14%; left: 6%; }
-.nav-mailman    { bottom: 7%; left: 7%; }
-.nav-truck      { bottom: 8%; right: 6%; }
+/* ─── Retro dock navigation (.dock-*) ────────────────────────── */
 
-/* idle animations */
-.plane-float { display: block; animation: plane-bob 3.2s ease-in-out infinite; }
-.plane-float[data-dir="left"] svg { transform: scaleX(-1); }
-.walk-bob  { display: block; animation: walk-bob 0.6s ease-in-out infinite; }
-.truck-bob { display: block; animation: truck-bob 0.5s ease-in-out infinite; }
-.wheel     { animation: wheel-spin 0.8s linear infinite; }
-.leg-front { transform-box: fill-box; transform-origin: top center; animation: leg-swing 0.6s ease-in-out infinite; }
-.plane-trail { opacity: 0.7; animation: trail-dash 1.2s linear infinite; }
+.dock-wrap {
+  position: fixed;
+  bottom: 1.3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+}
 
-@keyframes plane-bob { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-9px) rotate(1deg); } }
-@keyframes walk-bob  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes truck-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-@keyframes wheel-spin { to { transform: rotate(360deg); } }
-@keyframes leg-swing { 0%,100% { transform: rotate(9deg); } 50% { transform: rotate(-9deg); } }
-@keyframes trail-dash { to { stroke-dashoffset: -18; } }
+/* invisible reveal strip + peeking paper tab (immersive routes only) */
+.dock-hotzone {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 90px;
+  z-index: 39;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.dock-peek {
+  width: 64px;
+  height: 11px;
+  border: 1.5px dashed rgba(246, 239, 221, 0.65);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: rgba(246, 239, 221, 0.22);
+}
 
-@media (max-width: 760px) {
-  .nav-char-label { font-size: 1.2rem; }
-  .nav-plane-home { top: 12%; right: 5%; }
-  .nav-mailman { bottom: 5%; left: 5%; }
-  .nav-truck { bottom: 6%; right: 5%; }
+.dock {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.55rem;
+  padding: 0.55rem 0.8rem 0.5rem;
+  background: rgba(246, 239, 221, 0.92);
+  border: 1.5px solid #33271C;
+  border-radius: 14px;
+  box-shadow:
+    0 2px 0 rgba(51, 39, 28, 0.9),
+    0 14px 30px rgba(40, 26, 14, 0.28);
+}
+
+.dock-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dock-btn {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  line-height: 0;
+}
+
+/* the postage stamp: dashed border reads as perforation */
+.dock-stamp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border: 1.5px dashed #33271C;
+  border-radius: 5px;
+  transform-origin: bottom center;
+  box-shadow: 1.5px 2px 0 rgba(51, 39, 28, 0.35);
+}
+.dock-glyph { width: 26px; height: 26px; }
+
+/* handwritten label floats up on hover */
+.dock-label {
+  position: absolute;
+  bottom: calc(100% + 1.5rem);
+  font-family: 'Caveat', cursive;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: #33271C;
+  background: rgba(246, 239, 221, 0.95);
+  border: 1px solid rgba(51, 39, 28, 0.55);
+  padding: 0.2rem 0.65rem 0.25rem;
+  border-radius: 3px;
+  transform: rotate(-3deg) translateY(6px);
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(60, 40, 20, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dock-item:hover .dock-label,
+.dock-btn:focus-visible + .dock-label,
+.dock-item:has(.dock-btn:focus-visible) .dock-label {
+  opacity: 1;
+  transform: rotate(-3deg) translateY(0);
+}
+
+/* active-scene ink dot */
+.dock-ink-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-top: 0.3rem;
+  background: #33271C;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.dock-ink-dot[data-active="true"] { opacity: 0.85; }
+
+/* perforation divider between scene stamps and page links */
+.dock-divider {
+  align-self: stretch;
+  width: 0;
+  margin: 0.1rem 0.5rem 0.4rem;
+  border-left: 1.5px dashed rgba(51, 39, 28, 0.45);
+}
+
+.dock-btn:focus-visible .dock-stamp {
+  outline: 2px solid #BC5A3C;
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .dock-wrap { bottom: 0.9rem; }
+  .dock { gap: 0.4rem; padding: 0.45rem 0.6rem 0.4rem; }
+  .dock-stamp { width: 40px; height: 40px; }
+  .dock-glyph { width: 22px; height: 22px; }
+  .dock-divider { margin: 0.1rem 0.3rem 0.3rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .plane-float, .walk-bob, .truck-bob, .wheel, .leg-front, .plane-trail { animation: none; }
+  .dock-label { transition: none; }
+}
+
+/* ─── Doodle intro overlay (coded scrapbook intro — .di-*) ───────── */
+
+.di-root {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #ECE3CF;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.65s ease;
+}
+.di-root[data-stage="leaving"] { opacity: 0; pointer-events: none; }
+
+/* anchors: fixed points in the scene; framer animates the child around them */
+.di-anchor {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: block;
+  pointer-events: none;
+}
+
+.di-welcome {
+  display: inline-block; line-height: 1; white-space: nowrap;
+  font-family: 'Fraunces', serif; font-weight: 600;
+  font-size: clamp(2.4rem, 7vw, 4.8rem);
+  letter-spacing: 0.2em; text-indent: 0.2em; /* balance the tracking */
+  color: #33271C;
+}
+.di-word {
+  display: inline-block; line-height: 1.1; white-space: nowrap;
+}
+
+.di-dot {
+  display: block; width: 16px; height: 16px; border-radius: 50%;
+  background: #33271C;
+}
+
+.di-center {
+  display: flex; flex-direction: column; align-items: center;
+  position: relative;
+}
+.di-name {
+  font-family: 'Pacifico', cursive;
+  font-size: clamp(3.4rem, 11vw, 7.2rem);
+  color: #BC5A3C; line-height: 1.25; white-space: nowrap;
+}
+.di-underline { width: clamp(200px, 32vw, 330px); margin-top: -0.4rem; }
+.di-hello {
+  position: absolute; top: -1.4rem; right: -2.2rem;
+  font-family: 'Caveat', cursive; font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+  color: #2F6E66; white-space: nowrap;
+}
+.di-stamp { position: absolute; top: -2.6rem; left: -4.4rem; }
+
+.di-skip {
+  position: absolute; bottom: 1.75rem; right: 1.75rem;
+  min-width: 44px; min-height: 44px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.65rem; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(51, 39, 28, 0.65);
+  background: rgba(246, 239, 221, 0.6);
+  border: 1px solid rgba(51, 39, 28, 0.3);
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.di-skip:hover, .di-skip:focus-visible { color: #33271C; border-color: #BC5A3C; }
+
+@media (max-width: 640px) {
+  .di-stamp { top: -2.2rem; left: -2.4rem; }
+  .di-hello { right: -1rem; }
 }

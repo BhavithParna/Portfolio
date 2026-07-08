@@ -274,3 +274,101 @@ Each entry records the date, a summary of the change, and the files affected.
 - **Notes:** global dark `Nav` stays hidden on the stage automatically (it only
   shows after window scroll, which never happens here). Character SVG art is a
   first pass — refine positions/illustration after user reacts. Not yet pushed.
+
+### 2026-07-08 — Round 2: global dock, /stare polish, coffee counter, grain experiment parked
+- **What:**
+  1. **Dock is now global.** `DockNav` moved from the home stage into
+     `app/layout.tsx`; scene state lives in `lib/sceneStore.ts` (tiny
+     `useSyncExternalStore` store) so scene stamps work from any page
+     (navigate home + set scene). Active dot = current scene on "/" or
+     current route for links. On immersive routes (`HIDDEN_ROUTES` =
+     `/stare`) the dock stays tucked away with a small perforated paper tab
+     peeking at the bottom edge; cursor near the bottom makes it glide in
+     from a random direction (5 entry presets), and it tucks back ~1.1s
+     after the mouse leaves.
+  2. **/lost → /stare ("Something to Stare At").** User feedback: shader was
+     pixelated (ogl Renderer defaulted to dpr 1 — now uses devicePixelRatio
+     capped at 2; pixelFilter 700→2600), should rotate (isRotate), not react
+     to the mouse (mouseReact false). Library spine + dock label renamed.
+  3. **About scene:** vertically centered on the stage (flex) after "not in
+     the center" feedback; a "current rotation" card + postmark filler was
+     built and removed same-session (user disliked it). In its place: a
+     **live coffee counter** (`components/CoffeeCounter.tsx`) — cups drunk
+     worldwide today, honest statistical estimate (~2.25B cups/day from UTC
+     midnight, ticking every 90ms). No real API exists for this.
+  4. **FaultyTerminal experiment (parked).** Ported React Bits'
+     FaultyTerminal (`components/FaultyTerminal.tsx`) with two mods:
+     transparent alpha output (glyphs as ink flecks, no black CRT bg) and
+     SSR-safe dpr default. Tried it over the paper (hard to read text), then
+     behind a transparent page (exposed the dark desk — looked like dark
+     mode). User asked to revert to the light page and leave it for now;
+     component remains in the repo, unmounted, for future use.
+- **Files:** `components/DockNav.tsx` (global + hide/glide),
+  `lib/sceneStore.ts` (new), `app/layout.tsx`, `app/page.tsx`,
+  `app/stare/page.tsx` (new, replaces `app/lost/`), `components/Balatro.tsx`
+  (dpr), `components/CoffeeCounter.tsx` (new),
+  `components/FaultyTerminal.tsx` (new, unmounted),
+  `components/sections/About.tsx`, `components/sections/Library.tsx`,
+  `app/globals.css`.
+
+### 2026-07-08 — Coded typographic intro (replaces video), Get Lost page, dock nav
+- **What:**
+  1. **Intro v2 — `DoodleIntro.tsx` replaces `VideoIntro` in the layout.**
+     Coded motion-graphics intro (~10s, skippable via button or Esc):
+     "WELCOME" stamps in center → ~22 words about projects/likes (BCI, horror,
+     books, music, Luca, cars…) fill the screen in mixed fonts (Pacifico,
+     Caveat, Fraunces, Garamond italic, Inter), palette colors and random
+     tilts → everything collapses into an ink dot → dot blooms into
+     "Bhavith" + AIR MAIL stamp + "hello!" → sucked back into the dot →
+     cream frame fades into the (cream) landing. First cut had hand-drawn
+     doodle icons + paper-plane lasso; user disliked the icons, so the start
+     was rebuilt as pure typography (ending kept). Fonts are force-loaded on
+     mount (`document.fonts.load`) so the name never renders in fallback
+     serif on cold visits. Reduced-motion gets a static name card. Intro
+     renders on `/` only (old video played over every route). Styles:
+     `.di-*` in globals.css. Tuning knobs: `T_*` constants + `WORDS` array
+     in the component.
+  2. **New "Get Lost" book + `/lost` page (Balatro shader).** Added React
+     Bits' Balatro WebGL swirl (`components/Balatro.tsx`, dep: `ogl`),
+     defaulted to site palette (terracotta/teal/dark). `/lost` renders it
+     fullscreen with a small caption; new teal/terra spine in Library's
+     "Beyond the Lab" shelf ("Get Lost — A Cool Animation").
+  3. **Dock nav replaces the character nav.** User found the mailman/truck
+     icons odd; new `DockNav.tsx`: macOS-style dock as a cream paper tray of
+     perforated postage-stamp buttons with cursor-proximity magnification
+     (framer-motion springs), Caveat hover labels, active-scene ink dot.
+     Home/Library/Contact swap the stage; divider; Workshop (/projects) and
+     Get Lost (/lost) navigate. `StageNav.tsx` deleted, `.nav-char*`/
+     character keyframes removed, `.dock-*` added.
+- **Why:** User wanted a motion-graphics intro instead of the webcam video
+  (Motion.so had no credits → built it in code, free + matches aesthetic),
+  then iterated: typographic start, keep the ending; dock for navigation.
+- **Files:** `components/DoodleIntro.tsx` (new), `components/Balatro.tsx`
+  (new), `components/DockNav.tsx` (new), `app/lost/page.tsx` (new),
+  `components/StageNav.tsx` (deleted), `app/layout.tsx`, `app/page.tsx`,
+  `components/sections/Library.tsx`, `app/globals.css`, `package.json` (ogl).
+- **Now unused (kept for possible revert):** `components/VideoIntro.tsx`,
+  `public/intro.mp4`, `.vi-*` CSS block, `intro-source.mp4` (gitignored).
+- **Verified:** tsc clean; headless-Chrome frame captures of word fill,
+  collapse→name, landing reveal, dock hover magnification, and the /lost
+  shader all look right. Headless env couldn't fetch Google Fonts, so font
+  rendering in captures shows fallbacks — confirm Pacifico/Caveat live.
+
+### 2026-06-28 — Stage fixes: CSS cache, landing gap, hide nav, push
+- **What:**
+  1. Characters were stacking at the bottom unstyled — root cause was a stale
+     Turbopack CSS cache, NOT the code (stage rules valid but missing from the
+     compiled chunk). Fixed by `rm -rf .next` + clean restart. See memory
+     [[portfolio-turbopack-css-cache]]. (Gotcha: don't `pkill -f "next dev"` —
+     it kills the Bash tool's own shell; kill by port with `fuser -k 3000/tcp`.)
+  2. Removed the big gap above the name on the landing: About `paddingTop`
+     8rem→2.5rem, `paddingBottom` 7rem→3rem, `.sb-grid` margin-top 4.5rem→2.5rem
+     so the landing fits without scrolling.
+  3. Hid the top `Nav` bar on the home route — `Nav.tsx` now returns null when
+     `pathname === "/"` (the character nav replaces it); still shows on inner
+     pages.
+  4. Committed + pushed everything (`bb038bc`) to `main`.
+- **Files:** `components/sections/About.tsx`, `app/globals.css`,
+  `components/Nav.tsx`.
+- **Reminder:** PAT still not revoked (confirmed still working on push) — user
+  to revoke at github.com/settings/tokens. SSH key is set up & authenticated.

@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useEffect } from "react";
+import CoffeeCounter from "@/components/CoffeeCounter";
 
 const card = [
   { label: "Status",      value: "Undergraduate · Year 4 of 4" },
@@ -28,10 +29,18 @@ export default function About() {
   return (
     <>
       <style>{`#about .fade{opacity:0;transform:translateY(16px);transition:opacity 0.7s ease,transform 0.7s ease}`}</style>
-      <section id="about" className="sb-page" ref={ref} style={{ paddingTop: "2.5rem", paddingBottom: "3rem" }}>
+      <section
+        id="about"
+        className="sb-page"
+        ref={ref}
+        style={{
+          paddingTop: "2.5rem", paddingBottom: "3rem",
+          display: "flex", flexDirection: "column", justifyContent: "center",
+        }}
+      >
         <span className="sb-deckle sb-deckle-bottom" />
 
-        <div className="sb-wrap">
+        <div className="sb-wrap" style={{ width: "100%" }}>
 
           {/* Masthead */}
           <h1 className="sb-name fade">Bhavith <em>Parna</em></h1>
@@ -106,6 +115,11 @@ export default function About() {
               </div>
             </aside>
 
+          </div>
+
+          {/* Live coffee ticker anchors the bottom of the page */}
+          <div className="fade" style={{ marginTop: "clamp(2rem, 4vh, 3.25rem)", paddingBottom: "5rem" }}>
+            <CoffeeCounter />
           </div>
         </div>
       </section>

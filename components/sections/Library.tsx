@@ -97,6 +97,15 @@ const lifeMeta = [
     foil: "#E0C29A",
     italic: false,
   },
+  {
+    href: "/stare",
+    title: "Something to Stare At",
+    sub: "A Cool Animation",
+    w: 112, h: 292, mb: 4,
+    gradient: "linear-gradient(to right, #0E2A2E 0%, #0E2A2E 6%, #1C4A48 16%, #2F6E66 30%, #8A4630 50%, #2F6E66 70%, #1C4A48 84%, #0E2A2E 94%, #0E2A2E 100%)",
+    foil: "#E8C87A",
+    italic: true,
+  },
 ];
 
 /* ─── Reusable: spine decorative rule ────────────────────────── */
