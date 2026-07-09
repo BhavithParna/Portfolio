@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRef, useEffect } from "react";
-import { projects } from "@/lib/projects";
+import { shelveProjects } from "@/lib/projects";
 
 /* ─── Texture: SVG noise as data URI for bookcloth grain ─────── */
 const NOISE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`;
@@ -56,6 +56,13 @@ const bookMeta = [
     gradient: "linear-gradient(to right, #3A1A32 0%, #3A1A32 6%, #512846 16%, #6A375C 30%, #7E3E6E 50%, #6A375C 70%, #512846 84%, #3A1A32 94%, #3A1A32 100%)",
     foil: "#EBD6C0",
     mb: 5,
+  },
+  {
+    // Charcoal — the classified one
+    w: 122, h: 310,
+    gradient: "linear-gradient(to right, #14100C 0%, #14100C 6%, #241C14 16%, #362A1E 30%, #423424 50%, #362A1E 70%, #241C14 84%, #14100C 94%, #14100C 100%)",
+    foil: "#C86D53",
+    mb: 1,
   },
 ];
 
@@ -120,21 +127,28 @@ function FoilRule({ color, opacity = 0.55 }: { color: string; opacity?: number }
 
 /* ─── Spine Book (project books — narrow vertical spine) ─────── */
 function SpineBook({
-  href, title, context, award, w, h, gradient, foil, mb,
+  href, title, context, award, w, h, gradient, foil, mb, volume, lean = 0,
 }: {
   href: string; title: string; context: string;
   award: boolean; w: number; h: number;
   gradient: string; foil: string; mb: number;
+  volume?: string; lean?: number;
 }) {
+  const rest = `rotate(${lean}deg)`;
   return (
     <Link
       href={href}
-      title={title}
+      title={volume ? `${title} (Vol. ${volume})` : title}
       style={{
         flexShrink: 0,
         width: w,
         height: h,
         marginBottom: mb,
+        // A leaning companion tips into the volume beside it and rests its
+        // bottom corner on the plank.
+        marginLeft: lean ? -8 : 0,
+        transform: rest,
+        transformOrigin: "bottom left",
         background: gradient,
         position: "relative",
         display: "flex",
@@ -147,13 +161,13 @@ function SpineBook({
       }}
       onMouseEnter={e => {
         const el = e.currentTarget as HTMLElement;
-        el.style.transform = "translateY(-20px)";
+        el.style.transform = `translateY(-20px) ${rest}`;
         el.style.boxShadow = "3px 0 8px rgba(0,0,0,0.4), -1px 0 4px rgba(0,0,0,0.3), 0 24px 48px rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.6)";
         el.style.zIndex = "30";
       }}
       onMouseLeave={e => {
         const el = e.currentTarget as HTMLElement;
-        el.style.transform = "translateY(0)";
+        el.style.transform = rest;
         el.style.boxShadow = "3px 0 8px rgba(0,0,0,0.5), -1px 0 4px rgba(0,0,0,0.3), 0 2px 0 rgba(255,255,255,0.03)";
         el.style.zIndex = "1";
       }}
@@ -239,8 +253,20 @@ function SpineBook({
           </span>
         </div>
 
-        {/* Bottom ornament */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, marginTop: 8, width: "100%" }}>
+        {/* Bottom ornament — volume mark for books that come as a pair */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, marginTop: 8, width: "100%" }}>
+          {volume && (
+            <span style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "0.42rem",
+              fontWeight: 600,
+              letterSpacing: "0.14em",
+              color: foil,
+              opacity: 0.72,
+            }}>
+              {volume}
+            </span>
+          )}
           <FoilRule color={foil} opacity={0.4} />
         </div>
       </div>
@@ -406,20 +432,25 @@ export default function Library() {
 
         {/* ── Projects shelf ── */}
         <div className="reveal sb-shelf" style={{ overflowX: "auto" }}>
-          {projects.map((p, i) => {
-            const m = bookMeta[i % bookMeta.length];
+          {shelveProjects().map(({ project: p, volume, binding }) => {
+            const m = bookMeta[binding % bookMeta.length];
+            // A companion volume is bound to match its parent — same cloth and
+            // foil, a slimmer, shorter book leaning against it.
+            const companion = !!p.companionOf;
             return (
               <SpineBook
                 key={p.slug}
                 href={`/projects/${p.slug}`}
                 title={p.title}
                 context={p.context}
+                volume={volume && `VOL. ${volume}`}
                 award={!!p.award}
-                w={m.w}
-                h={m.h}
+                w={companion ? Math.round(m.w * 0.7) : m.w}
+                h={companion ? Math.round(m.h * 0.84) : m.h}
                 gradient={m.gradient}
                 foil={m.foil}
-                mb={m.mb}
+                mb={companion ? 0 : m.mb}
+                lean={companion ? -5 : 0}
               />
             );
           })}

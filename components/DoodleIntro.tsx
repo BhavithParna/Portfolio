@@ -16,10 +16,24 @@ import { motion, useReducedMotion } from "framer-motion";
     5. the name is pulled back into the dot, the dot shrinks to nothing,
        and the overlay fades from cream into the (cream) landing page
   Reduced motion: static name card for a moment, then a plain fade.
-  Only renders on "/" — deep links skip straight to their page.
+
+  The intro is a *landing* experience: it plays only when the browser loaded
+  the site at "/" — a fresh open or a refresh. Deep links skip it, and once
+  you're in, navigating back home never replays it. See LANDED_ON_HOME.
 
   Only transform/opacity (and SVG pathLength) are animated.
 */
+
+/*
+  Evaluated once per full page load (a refresh re-evaluates the module; a
+  client-side navigation does not). So this answers "did this browsing session
+  begin on the landing page?", which is exactly when the intro should play.
+*/
+const LANDED_ON_HOME =
+  typeof window !== "undefined" && window.location.pathname === "/";
+
+/* Survives client-side navigation, so returning home doesn't replay it. */
+let introSpent = false;
 
 type Phase = "play" | "collapse" | "name" | "exit" | "leaving" | "done";
 
@@ -99,34 +113,56 @@ export default function DoodleIntro() {
   const [phase, setPhase] = useState<Phase>("play");
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const reduced = useReducedMotion();
-  // Landing experience only — deep links (/lost, /horror, …) skip straight in.
   const isHome = usePathname() === "/";
+
+  // Decided once, on the first render of this page load. On the server there
+  // is no window, and "/" is only prerendered for the landing page — so this
+  // agrees with what the client computes and hydration stays clean.
+  const shouldPlayRef = useRef<boolean | null>(null);
+  if (shouldPlayRef.current === null) {
+    shouldPlayRef.current =
+      isHome && (typeof window === "undefined" || (LANDED_ON_HOME && !introSpent));
+  }
+  const shouldPlay = shouldPlayRef.current;
+
+  // One showing per page load, even if the intro never reaches its last frame.
+  useEffect(() => {
+    if (shouldPlay) introSpent = true;
+  }, [shouldPlay]);
+
+  // Navigating off the landing page retires the intro — coming back home is
+  // a return, not an arrival.
+  useEffect(() => {
+    if (!isHome) setPhase("done");
+  }, [isHome]);
 
   // Lock scroll while the intro is up.
   useEffect(() => {
-    if (!isHome || phase === "done") return;
+    if (!shouldPlay || !isHome || phase === "done") return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = prev; };
-  }, [isHome, phase]);
+  }, [shouldPlay, isHome, phase]);
 
   // Kick off webfont fetches immediately — the words appear seconds in,
   // and browsers only fetch a font once text using it first renders.
   useEffect(() => {
+    if (!shouldPlay) return;
     if (typeof document !== "undefined" && "fonts" in document) {
       ["1em Pacifico", "1em Caveat", "1em Fraunces", "italic 1em 'EB Garamond'"]
         .forEach((f) => document.fonts.load(f));
     }
-  }, []);
+  }, [shouldPlay]);
 
   // Master timeline.
   useEffect(() => {
+    if (!shouldPlay) return;
     const steps: [number, Phase][] = reduced
       ? [[1800, "leaving"], [2400, "done"]]
       : [[T_COLLAPSE, "collapse"], [T_NAME, "name"], [T_EXIT, "exit"], [T_LEAVE, "leaving"], [T_DONE, "done"]];
     timers.current = steps.map(([t, p]) => setTimeout(() => setPhase(p), t));
     return () => timers.current.forEach(clearTimeout);
-  }, [reduced]);
+  }, [shouldPlay, reduced]);
 
   const skip = () => {
     timers.current.forEach(clearTimeout);
@@ -141,7 +177,7 @@ export default function DoodleIntro() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  if (!isHome || phase === "done") return null;
+  if (!shouldPlay || !isHome || phase === "done") return null;
 
   const collapsing = phase !== "play";
   const stage = phase === "leaving" ? "leaving" : "playing";

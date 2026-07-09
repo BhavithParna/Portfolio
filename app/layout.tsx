@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Nav from "@/components/Nav";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import DoodleIntro from "@/components/DoodleIntro";
 import DockNav from "@/components/DockNav";
@@ -16,7 +15,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col antialiased" style={{ position: "relative" }}>
         <DoodleIntro />
         <AnimatedBackground />
-        <Nav />
         <div style={{ position: "relative", zIndex: 1 }}>
           {children}
         </div>

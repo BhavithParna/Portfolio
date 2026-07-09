@@ -9,6 +9,10 @@ export type Project = {
   category: string[];
   featured: boolean;
   award?: string;
+  classified?: boolean;
+  /** Slug of the project this one is a companion volume to. Companions share
+   *  their parent's number and binding, and sit beside it on the shelf. */
+  companionOf?: string;
 };
 
 export const projects: Project[] = [
@@ -59,6 +63,22 @@ export const projects: Project[] = [
     featured: true,
   },
   {
+    slug: "teerbench",
+    title: "TeerBench",
+    context: "Companion Software",
+    dates: "2026 – Present",
+    summary: "The software half of the TEER instrument — a desktop GUI that turns the benchtop device into something you can actually drive, with live impedance readout and session logging.",
+    bullets: [
+      "Desktop GUI for the TEER measurement device — no more driving the instrument from a terminal",
+      "Live impedance readout with real-time plotting across a measurement session",
+      "Session logging and export for downstream analysis of barrier-integrity data",
+    ],
+    tags: ["GUI", "Desktop App", "Instrumentation", "Data Logging", "TEER"],
+    category: ["Biomedical", "Software"],
+    featured: false,
+    companionOf: "iith-teer-device",
+  },
+  {
     slug: "smart-helmet",
     title: "Smart Helmet System",
     context: "Minor Project",
@@ -104,21 +124,6 @@ export const projects: Project[] = [
     featured: false,
   },
   {
-    slug: "uav-payload-precision-agriculture",
-    title: "Modular UAV Payload for Precision Agriculture",
-    context: "Smart India Hackathon (SIH)",
-    dates: "Nov 2024",
-    summary: "A modular drone payload designed for precision agriculture — combining remote sensing capabilities with targeted aerial irrigation.",
-    bullets: [
-      "Collaborated with a 6-person multidisciplinary team",
-      "Developed the high-level framework for a dual-purpose system",
-      "Integrating remote sensing and targeted aerial irrigation to optimise farmland management",
-    ],
-    tags: ["UAV", "Drones", "IoT", "Remote Sensing", "Agriculture"],
-    category: ["IoT & Embedded", "Hackathon"],
-    featured: false,
-  },
-  {
     slug: "hydro-plantation-geotagging",
     title: "Geotagging of Plantation in Hydro Project Catchment",
     context: "Smart India Hackathon (SIH) 2023",
@@ -135,7 +140,67 @@ export const projects: Project[] = [
     featured: false,
     award: "SIH 2023 Finalist",
   },
+  {
+    slug: "brainengine",
+    title: "BrainEngine",
+    context: "Classified",
+    dates: "Pending",
+    summary: "Redacted until further notice.",
+    bullets: [],
+    tags: [],
+    category: ["Neurotech / BCI"],
+    featured: false,
+    classified: true,
+  },
 ];
 
 export const featuredProjects = projects.filter(p => p.featured);
 export const allCategories = ["All", "Neurotech / BCI", "IoT & Embedded", "Biomedical", "Hackathon", "Research"];
+
+export type Shelved = {
+  project: Project;
+  /** Catalogue number. A companion shares its parent's number. */
+  number: string;
+  /** "I" / "II" — only set on the two halves of a companion pair. */
+  volume?: string;
+  /** Which binding (spine colour / poster ink) to use. Companions share their parent's. */
+  binding: number;
+  /** The project this one is bound with, if any. */
+  companion?: Project;
+};
+
+/**
+ * Assigns catalogue numbers and bindings. Companion volumes don't take a
+ * number of their own — they share their parent's and are marked Vol. II,
+ * so the pair reads as two volumes of one work.
+ */
+export function shelveProjects(list: Project[] = projects): Shelved[] {
+  const bySlug = new Map(list.map(p => [p.slug, p]));
+  const primary = new Map<string, { number: string; binding: number }>();
+
+  let n = 0;
+  for (const p of list) {
+    if (p.companionOf && bySlug.has(p.companionOf)) continue;
+    primary.set(p.slug, { number: String(++n).padStart(2, "0"), binding: n - 1 });
+  }
+
+  const hasCompanion = new Set(
+    list.filter(p => p.companionOf && bySlug.has(p.companionOf)).map(p => p.companionOf!),
+  );
+
+  return list.map(p => {
+    const parentSlug = p.companionOf && bySlug.has(p.companionOf) ? p.companionOf : null;
+    const base = primary.get(parentSlug ?? p.slug)!;
+    return {
+      project: p,
+      number: base.number,
+      binding: base.binding,
+      volume: parentSlug ? "II" : hasCompanion.has(p.slug) ? "I" : undefined,
+      companion: parentSlug
+        ? bySlug.get(parentSlug)
+        : list.find(c => c.companionOf === p.slug),
+    };
+  });
+}
+
+export const primaryCount = shelveProjects().filter(s => !s.project.companionOf).length;
