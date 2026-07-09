@@ -372,3 +372,85 @@ Each entry records the date, a summary of the change, and the files affected.
   `components/Nav.tsx`.
 - **Reminder:** PAT still not revoked (confirmed still working on push) — user
   to revoke at github.com/settings/tokens. SSH key is set up & authenticated.
+
+### 2026-07-09 — Workshop rebuilt (ferrofluid + flying posters), TeerBench, intro fix, nav removed
+- **What:**
+  1. **/projects rebuilt around two React Bits components, both adapted.**
+     `Ferrofluid.tsx` (new) renders the churning ink layer with `mix-blend-mode:
+     multiply` in the scrapbook palette (terra/teal/mustard) so it reads as ink
+     soaking into cream paper rather than neon-on-black; pointer tracking moved
+     to `window` since the canvas sits behind other layers with
+     `pointer-events: none`. `ProjectPosters.tsx` (new, adapted from
+     FlyingPosters) replaces the card list + filter chips: projects have no
+     images, so each poster is a **typographic paper card drawn on an offscreen
+     2D canvas** (plate block, big serif number, title, teaser, tags, award,
+     rubber CLASSIFIED stamp) and used as a WebGL texture. Scroll/drag to
+     rifle through, click to open; the centred poster drives an HTML caption.
+     Two upstream bugs fixed: the rotation math left the centred poster
+     edge-on/mirrored at rest (now `uPosition` is remapped so 0 rotation =
+     screen centre), and the rAF loop was never cancelled on unmount.
+     Poster summaries that don't fit now end in an ellipsis instead of
+     stopping mid-sentence. Waits on `document.fonts.ready` before drawing.
+  2. **Projects data + a companion-volume model.** Removed the UAV payload
+     project. Added **BrainEngine** (`classified: true`, charcoal binding,
+     redacted everywhere). Added **TeerBench**, the GUI for the TEER device,
+     as a *companion volume* rather than a standalone project: new
+     `companionOf` field + `shelveProjects()` in `lib/projects.ts` assigns
+     catalogue numbers and bindings, and a companion **inherits its parent's
+     number and binding** and gets a Vol. I / Vol. II mark. One helper now
+     drives the shelf, the posters and the detail pages so they can't drift.
+     `primaryCount` (8) is what the "NN / 08" caption counts.
+  3. **Library shelf** now maps over `shelveProjects()`. The companion is a
+     slimmer, shorter book in the *same cloth and foil* as its parent, leaning
+     against it (`lean` prop, negative margin, `transform-origin: bottom left`),
+     with `VOL. I` / `VOL. II` foiled on the two spines.
+  4. **Project detail pages** rewritten: cream `.sb-page`, `No. NN · Vol. II`
+     eyebrow, title, and a rotating playful placeholder ("Looks like I got lazy
+     again…") instead of the old dark spec tables. Classified projects get the
+     stamp + "I'd have to redact you"; companions get a "Bound with <title>"
+     link to their other half.
+  5. **Top nav bar removed for good.** `Nav.tsx` deleted, unmounted from
+     `layout.tsx`, and ~70 lines of dead `.nav*` CSS stripped. The stamp dock
+     is now the only navigation. Verified 0 top-bar elements across all 8
+     routes. (The bar the user still saw was the stale Netlify deploy.)
+  6. **Intro replay bug fixed.** Root cause was *not* "plays on every home
+     visit": `DoodleIntro`'s ~10s timeline ran invisibly even when you loaded an
+     inner page, so *arriving* at `/` inside that window played it, which looked
+     random. The intro is now a property of the **page load**, not the route:
+     module-level `LANDED_ON_HOME` (re-evaluates on refresh, survives
+     client-side navigation) + `introSpent`, set as soon as it shows; leaving
+     `/` retires it. SSR-safe, so hydration stays clean.
+  7. **README rewritten** from `create-next-app` boilerplate into a personal
+     note in the user's voice (committed separately by the user, `cbaa241`).
+- **Files:** `components/Ferrofluid.tsx` (new), `components/ProjectPosters.tsx`
+  (new), `components/Nav.tsx` (deleted), `lib/projects.ts`,
+  `app/projects/page.tsx`, `app/projects/[slug]/page.tsx`,
+  `components/sections/Library.tsx`, `components/DoodleIntro.tsx`,
+  `app/layout.tsx`, `app/globals.css`, `README.md`.
+- **Verified:** `tsc` clean, build green (20 static pages). Headless captures of
+  the posters, the shelf pair, and the TeerBench poster/detail. Intro fix tested
+  across 7 cases (fresh `/` load plays, refresh replays, 3 round-trips don't,
+  fresh inner-page load never plays, home-from-inner-load doesn't — the original
+  bug) with no console/hydration errors.
+- **Now dead code:** `components/ProjectCard.tsx` and
+  `components/sections/Projects.tsx` (nothing imports them), plus the older
+  `Hero.tsx` / `VideoIntro.tsx`. `allCategories` in `lib/projects.ts` is unused
+  now that the filter chips are gone.
+- **Gotcha — headless WebGL:** Chrome 139+ kills software WebGL contexts right
+  after creation (`CONTEXT_LOST_WEBGL` per canvas, blank output). Screenshots of
+  any `ogl` page need launch args `--enable-unsafe-swiftshader --use-gl=angle
+  --use-angle=swiftshader`. Also `drawImage(webglCanvas)` pixel probes read
+  all-zero without `preserveDrawingBuffer`; screenshot instead.
+- **Corrects the 2026-06-28 SSH note:** git-over-SSH was never an askpass quirk.
+  `~/.gitconfig` contains `url.https://github.com/.insteadOf git@github.com:`,
+  which silently rewrites the SSH remote back to HTTPS, and GitHub no longer
+  accepts password auth there. The key itself is valid (`ssh -T git@github.com`
+  → "Hi BhavithParna!"). Fix: `git config --global --unset
+  url.https://github.com/.insteadOf`, then push with the SSH remote.
+- **Note:** `~/Documents/port` (the parent of this repo) is a *separate* git repo
+  on branch `master` with no remote, and it tracks `Portfolio` as a gitlink.
+  Running `git push` from there fails with "'origin' does not appear to be a git
+  repository" — the portfolio repo is `~/Documents/port/Portfolio` (`main`).
+- **Still pending:** PAT revoke. `ARCHITECTURE.md` is badly stale (it still
+  describes the pre-scrapbook design: brass rivets, sepia portrait, six
+  scrollable sections, a filter bar and a top bar) and now contradicts the site.
