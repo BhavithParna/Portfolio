@@ -1,36 +1,15 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# my portfolio
 
-## Getting Started
+hey, welcome. the actual site is over at [bhavithparna.netlify.app](https://bhavithparna.netlify.app) if you'd rather look at it than read about it.
 
-First, run the development server:
+one thing to get out of the way first. this is not a resume. if you came here to work out whether i can do the job, this site is a bad way to find out, and you should just ask me for the real thing. i build this because it's fun, and that's about the whole reason it exists.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+what it actually is is somewhere for me to play. i'll come across some component or shader or animation at 1am, think "huh, that's cool", and then it's in the site by the weekend whether or not it had any business being there. at the moment there's a bookshelf you browse instead of a project list, an intro that draws itself, some ferrofluid churning around behind the posters, and a whole page that exists for no reason other than staring at. none of that is load bearing. that's sort of the point of it.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+it also changes constantly, so half of what i just described might not survive the month. stuff i was proud of in march is gone. i'm sure some of what's in here right now is going the same way.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+roughly four months of evenings have gone into it and this is where it's landed, which is not really anywhere in particular. we'll see.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+if you've come across something cool i should try, some strange component or effect or an idea that shouldn't work, tell me. i'll almost certainly build it.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+(it's next.js. `npm run dev`, if you really want.)
