@@ -454,3 +454,226 @@ Each entry records the date, a summary of the change, and the files affected.
 - **Still pending:** PAT revoke. `ARCHITECTURE.md` is badly stale (it still
   describes the pre-scrapbook design: brass rivets, sepia portrait, six
   scrollable sections, a filter bar and a top bar) and now contradicts the site.
+
+### 2026-07-12 — New photographic Hero as the landing scene; About moved to its own tab
+- **What:**
+  1. Rewrote `components/sections/Hero.tsx` (previously dead code — SVG
+     racetrack art) to match a design imported from Claude Design
+     (`Hero Section.dc.html`): full-bleed moody sky photo, dark gradient
+     scrim, small uppercase eyebrow ("Biomedical Engineer · Builder"), a huge
+     stacked Playfair Display wordmark "BHAVITH / *Parna*" with an offset
+     duotone "echo" outline behind each line (terracotta/teal
+     `-webkit-text-stroke`), and an italic tagline. Background image is
+     `public/images/hero-bg.jpg` (Ivan Levy's cloud/sky photo from Unsplash,
+     downsized 3620px→2400px wide, 843KB→210KB). Added a bottom-right photo
+     credit ("Photo — Ivan Levy / Unsplash", linked) — `.hs-credit`, lifted
+     above the dock nav on narrow phones (own `max-width:480px` rule) since
+     the dock nearly spans the full width there and would otherwise overlap it.
+  2. **Hero is now the "home" scene** (shown after the intro animation) in the
+     stage system; **About moved to its own new "about" scene/dock tab**
+     ("about me", quill-glyph stamp) rather than being the landing. Updated
+     `lib/sceneStore.ts` (`Scene` type gains `"about"`), `app/page.tsx`
+     (renders `Hero` for `"home"`, `About` for `"about"`), and `DockNav.tsx`
+     (new `about` item + `QuillGlyph`, 5-item ITEMS array, divider index
+     bumped 3→4 to stay before the contact/letter stamp).
+  3. Added Playfair Display (weights 600/700/900 + italic 500/600) to the
+     Google Fonts `@import` in `globals.css`; bumped Inter to include 600
+     (needed for the eyebrow label). Replaced the old `.hero`/`.hero-content`
+     CSS block with a new `.hs-*` namespace; removed the now-unused
+     `race-glow` keyframe (was only for the deleted SVG racetrack lines).
+  4. **Why:** User imported a hero design from claude.ai/design and asked for
+     it implemented with their own background photo (from `~/Downloads`,
+     credited), specifying the Hero should replace the current landing and
+     that About should become a separate tab instead.
+  - **Files:** `components/sections/Hero.tsx` (rewritten),
+    `public/images/hero-bg.jpg` (new), `lib/sceneStore.ts`, `app/page.tsx`,
+    `components/DockNav.tsx`, `app/globals.css`.
+  - **Verified:** `tsc` clean; headless-Chrome captures of desktop (1600px),
+    mobile (420px), and the credit corner; clicked through to the new "about
+    me" tab and confirmed it renders the existing scrapbook About page with
+    no console errors.
+
+### 2026-07-12 — AGENTS.md cleanup + local hosting
+- **What:** Removed two stray leftover tokens in `AGENTS.md` (a bare `git`
+  line mid-paragraph, and a trailing `z2` after the rules block) that didn't
+  belong to the actual Next.js-version-warning instructions. Also started the
+  dev server locally (`npm run dev`, Turbopack) to host the site for review —
+  running at `http://localhost:3000`.
+- **Why:** User asked to clean up the stray tokens flagged during the Hero
+  Section work, and to host the site locally to look at it.
+- **Files:** `AGENTS.md`.
+
+### 2026-07-12 — Hero credit link corrected + Workshop blank-page fix
+- **What:**
+  1. The Unsplash credit link on the new Hero (`@ivan-levyv`, guessed from the
+     downloaded file's naming convention) was wrong — user gave the real
+     handle, `@ilevyv`. Updated `components/sections/Hero.tsx`.
+  2. **`/projects` ("The Workshop") went blank** (just the header text, no
+     ferrofluid ink layer or posters) after the run of Hero-related file
+     edits. Dev console showed `renderer.render({ scene, camera })` in
+     `ProjectPosters.tsx:498` throwing `Cannot read properties of undefined
+     (reading 'forEach')` — an `ogl` WebGL renderer left in a broken state by
+     a stale Turbopack dev cache (same class of issue as the earlier
+     stage-CSS cache bug from 2026-06-28). Fix was `rm -rf .next` + restart
+     `next dev`; a follow-up headless capture (with the
+     `--enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader`
+     launch flags this project's WebGL pages need) confirmed the ferrofluid
+     background and poster cards render again with no console errors.
+- **Why:** User caught both issues live — the wrong credit handle, and the
+  blank Workshop page — while reviewing the local dev server.
+- **Files:** `components/sections/Hero.tsx`.
+- **Gotcha reinforced:** if a page that uses `ogl`/WebGL (Workshop, `/stare`)
+  goes blank after a lot of Turbopack hot-reloading in one session, clear
+  `.next` and restart the dev server before assuming the component code
+  broke.
+
+### 2026-07-12 — About rebuilt to the imported design; intro now ink-floods into the Hero; glossy dock
+- **What:**
+  1. **About rebuilt** to match `About Section.dc.html` imported from Claude
+     Design (same project as the Hero): big Playfair-italic "about ²⁰²⁶"
+     masthead with a `[ bhavith parna ]` mono byline, two-column grid — left
+     is an artifact pile (torn-edge photo with teal washi tape, the yellow
+     sticky note, "Open to opportunities" rubber stamp, and the coffee
+     counter reborn as a spinning sticker ring), right is the bio ("about
+     me" + Playfair-italic lead + Garamond paragraphs), a profile/contact
+     index with `[ label ]` mono brackets, and the CV/GitHub/LinkedIn
+     buttons. Adapted to the site's `.sb-page` tokens/palette instead of the
+     design's hardcoded colors; body text stays EB Garamond (design used
+     Inter) so it sits with Contact/Library. New `.ab-*` CSS namespace;
+     entrance stagger runs on every scene mount (`ab-enter`, opacity-only
+     variant for the rotated props so their transforms survive). Added
+     **JetBrains Mono** (400/500) and Playfair italic-700 to the fonts
+     import. Photo: user dropped a grainy Darth Vader night shot into the
+     design's image slot; original taken from `~/Downloads/dapic.jpeg` →
+     `public/images/about-photo.jpg` (the design-slot webp was a recompress).
+     Torn photo uses `filter: drop-shadow` (box-shadow gets clipped by the
+     tear's `clip-path`), and the tape is a *sibling* of the clipped figure
+     so it isn't cut off.
+  2. **CoffeeCounter rewritten as the design's spinning ring** — "COFFEES
+     DRUNK WORLDWIDE TODAY •" orbiting a paper disc (22s spin, paused under
+     reduced motion), count in the middle, "3 are mine" under it. Kept the
+     honest ~2.25B cups/day estimate (design mock used random increments).
+     Old boxy `.sb-coffeectr` styles removed.
+  3. **Intro → Hero seamless transition.** The intro used to fade its cream
+     page over the now-dark photographic Hero (jarring). New ending: after
+     the name is pulled back into the ink dot, the dot **bursts and dark ink
+     (`.di-flood`, #1d1712) floods the screen** (0.6s), then the overlay
+     dissolves dark-into-dark over the Hero's night sky. At the moment the
+     dissolve starts, `DoodleIntro` fires `REVEAL_EVENT` ("bp:intro-reveal");
+     `Hero` (now a client component) listens and bumps a `key` to remount,
+     replaying its entrance stagger so the wordmark rises out of the ink
+     instead of already sitting there (it used to animate unseen behind the
+     overlay at page load). Timeline: T_DONE 10250→10800, skip path takes the
+     same flood exit (1.2s); reduced motion keeps the plain fade (no flood,
+     no transition delay).
+  4. **Dock polished/glossier** (user ask): tray gets a cream gradient +
+     `backdrop-filter` blur, inset top highlight, layered drop shadows and a
+     diagonal sheen (`.dock::after`); stamps get a gloss gradient over their
+     tint + inset highlight. `DockNav` stamp tint switched from `background`
+     shorthand to `backgroundColor` so the CSS gloss gradient isn't wiped.
+  5. **Workshop blank again** (user report) — same stale Turbopack cache
+     class as before; fixed with `fuser -k 3000/tcp`, `rm -rf .next`,
+     restart. Ferrofluid + posters verified rendering afterwards.
+  6. **Old About-only CSS removed** (`.sb-tagline`, `.sb-grid`, `.sb-quote`,
+     `.sb-letter`, `.sb-card`, `.sb-card-title`, `.sb-clip`, `.sb-coffee`,
+     `.sb-corner`, `.sb-doodle*`) — Contact/Library/Workshop classes kept.
+- **Files:** `components/sections/About.tsx` (rewritten),
+  `components/CoffeeCounter.tsx` (rewritten), `components/DoodleIntro.tsx`,
+  `components/sections/Hero.tsx` (client + REVEAL_EVENT),
+  `components/DockNav.tsx`, `app/globals.css` (fonts, `.ab-*`, `.di-flood`,
+  dock gloss, dead CSS removed), `public/images/about-photo.jpg` (new).
+- **Verified:** `tsc` clean; headless captures of the About scene (top +
+  scrolled), the ink-flood frames, the settled Hero, the glossy dock, and
+  the restored Workshop — no console/page errors.
+- **Still pending:** `/bhavith-parna-cv.pdf` is still 404 (no CV file in
+  `public/`); PAT revoke; stale `ARCHITECTURE.md`.
+
+### 2026-07-12 — Round 2: one-screen About + bean-cup counter, intro→Hero name morph, hero copy trim, dock tuck on Hero, Workshop root cause found
+- **What:**
+  1. **About compacted to fit one viewport with no scrolling** (user ask).
+     `.ab-page` is now a flex column centered in `min-height:100%`; title,
+     grid gaps, paragraph sizes/margins and the facts grid all tightened
+     (masthead clamp 3.6rem max, body 0.99rem/1.55, facts 0.85rem values).
+     Verified `scene.scrollHeight - clientHeight === 0` at 1600×950.
+     Below 980px width it intentionally reverts to normal scrolling
+     (`justify-content:flex-start`). The rubber stamp moved to `left:0`
+     so it stops overlapping the mug.
+  2. **CoffeeCounter v3 — beans falling into a hand-drawn mug** (replaces
+     the spinning ring, which replaced the box). One bean ≈ 100 million
+     cups (`CUPS_PER_BEAN`), so ~22 beans by midnight UTC. Beans are
+     framer-motion `<g>`s with spring drops, clipped to the mug interior so
+     they fall in through the mouth; on mount the day's beans rain in
+     staggered (`initialBeans` ref separates the entrance wave from later
+     live drops). Deterministic slot/jitter/rotation via `slot(i)` hashing.
+     Steam wisps animate via CSS (`.ab-steam`, paused under reduced
+     motion). Live count + "1 bean ≈ 100 million cups · 3 are mine" caption
+     below in JetBrains Mono. Honest ~2.25B/day estimate kept.
+  3. **Intro ending v2 — real name handoff to the Hero** (user ask:
+     hero-font name, slide up, Parna + rest appear). The dot now blooms
+     into "BHAVITH" set in the Hero's exact Playfair style (`.di-bigname`,
+     same `clamp(56px,13vw,190px)` type); "hello!" + AIR MAIL stamp orbit
+     it on their own anchors and whisk away at exit. Then the name slides
+     up onto the *measured* position of the Hero's BHAVITH row
+     (`getBoundingClientRect` of `.hs-name-main` — the Hero is mounted
+     beneath the overlay, so the landing is pixel-exact at any viewport),
+     while the dark ink floods behind it (flood: 0.7s easeIn, delay 0.05)
+     and the name's color flips ink→cream late (`color` sub-transition,
+     delay 0.6) so it flips as the ink arrives. Overlay opacity is now
+     animated by framer on the root (CSS transition removed) because the
+     fade timing differs by path: normal = fade immediately at T_LEAVE
+     (flood covered during exit); skip = wait `T_SKIP_FLOOD` (800ms) for
+     the flood first. `REVEAL_EVENT` is now a CustomEvent carrying
+     `{ morph }`: true on the normal ending — Hero then keeps its BHAVITH
+     row static (echo outline + Parna + tagline-slot + credit stagger in
+     around it); false on skip/reduced-motion — full Hero stagger.
+     Timeline: T_LEAVE 9600, T_DONE 10200. `.di-underline` (Pacifico-era
+     squiggle) removed; reduced-motion card now shows Playfair "BHAVITH".
+  4. **Hero copy** (two quick user asks): eyebrow ("BIOMEDICAL ENGINEER ·
+     BUILDER") removed — `.hs-content` gets `margin-top:calc(2.2vh+13px)`
+     so the wordmark doesn't shift; tagline ("Building at the edge…")
+     replaced by an uppercase tracked "Biomedical Engineer" (`.hs-role`)
+     in the tagline's slot under the name. (A brief `.hs-bottom`
+     bottom-of-screen variant existed for minutes; superseded.)
+  5. **Dock tucks away on the Hero** (user ask): `DockNav`'s `tucked` is
+     now `HIDDEN_ROUTES.has(pathname) || (pathname === "/" && scene ===
+     "home")` — same peek-tab + glide-in-on-cursor behavior as `/stare`.
+     Clicking the home stamp keeps the dock revealed (cursor is on it);
+     it tucks 1.1s after the mouse leaves. Verified: hidden on hero,
+     glides in at bottom hover, stays visible on all other scenes/routes.
+  6. **Workshop blank — REAL root cause found (previous diagnosis wrong).**
+     It reproduces on a *clean* cache: `ProjectPosters` rendered one JSX
+     `<canvas>` and its cleanup calls `loseContext()`; React StrictMode's
+     dev double-mount re-runs the effect on the same canvas, and
+     `getContext()` hands ogl the already-lost context → `renderer.render`
+     throws `Cannot read properties of undefined (reading 'forEach')`
+     (ProjectPosters.tsx:498) and the posters never draw. It's a race
+     (loss processing is async), which is why cache clears *seemed* to fix
+     it before. **Fix:** the effect now `document.createElement`s a fresh
+     canvas per run and removes it in cleanup, so every mount gets a live
+     context. `Ferrofluid` and `Balatro` already followed this pattern
+     (own canvas per mount) — untouched.
+  7. **Turbopack stale-CSS episode:** after many hot reloads the served
+     `app_globals` CSS chunk stopped including new rules (`.hs-role`
+     missing while later rules worked; "✓ Compiled" logs lying). Fixed
+     with the usual `fuser -k 3000/tcp && rm -rf .next` + restart, then
+     verified the served chunk contains `hs-role`/`ab-cup`/`di-bigname`.
+     Dev server is running in the background (dev2.log).
+- **Files:** `components/sections/About.tsx`, `components/CoffeeCounter.tsx`
+  (rewritten again), `components/DoodleIntro.tsx`,
+  `components/sections/Hero.tsx`, `components/DockNav.tsx`,
+  `components/ProjectPosters.tsx` (canvas-per-mount fix),
+  `app/globals.css` (`.ab-*` compaction + cup/steam, `.di-bigname`,
+  `.hs-role`, `.hs-content` offset; `.hs-eyebrow`/`.hs-tagline`/
+  `.di-underline` removed).
+- **Verified:** `tsc` clean throughout; headless: About overflow = 0px at
+  1600×950 with beans/cup/stamp laid out cleanly; morph sequence frames
+  (name blooms → slides up → lands exactly on the Hero wordmark → Parna
+  and echo stagger in); dock tucked on hero + peek-tab reveal working;
+  dock opacity 1 on About. **Note:** headless swiftshader rendering lags
+  screenshots ~0.5–1s, so mid-animation frames are approximate — the
+  choreography order was verified, exact feel should be judged live.
+- **NOT yet verified (user interrupted the run):** the ProjectPosters
+  StrictMode fix under repeated loads — single-load smoke test pending;
+  user should hard-reload `/projects`. If it still errors, the fix to
+  re-examine is in `ProjectPosters.tsx` (fresh-canvas effect).
+- **Still pending:** CV pdf 404; PAT revoke; stale `ARCHITECTURE.md`.

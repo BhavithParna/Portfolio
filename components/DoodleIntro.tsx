@@ -12,9 +12,14 @@ import { motion, useReducedMotion } from "framer-motion";
     2. words spill in around it — projects, horror, books, music, Luca —
        in mismatched fonts, sizes, colors and tilts until the page is full
     3. everything gets sucked into a single ink dot
-    4. the dot blooms into "Bhavith" + postage stamp + "hello!"
-    5. the name is pulled back into the dot, the dot shrinks to nothing,
-       and the overlay fades from cream into the (cream) landing page
+    4. the dot blooms into "BHAVITH" (set in the Hero's Playfair wordmark
+       style) + postage stamp + "hello!"
+    5. the extras whisk away, dark ink floods the page, and the name slides
+       up — measured onto the exact spot and size of the Hero's "BHAVITH"
+       row — turning cream as the ink rises behind it. The overlay then
+       dissolves and the Hero takes over with the name already in place:
+       REVEAL_EVENT carries { morph: true } so the Hero keeps BHAVITH still
+       and staggers in only Parna, the eyebrow, the tagline and the credit.
   Reduced motion: static name card for a moment, then a plain fade.
 
   The intro is a *landing* experience: it plays only when the browser loaded
@@ -35,14 +40,23 @@ const LANDED_ON_HOME =
 /* Survives client-side navigation, so returning home doesn't replay it. */
 let introSpent = false;
 
+/*
+  Fired when the overlay starts dissolving into the Hero. detail.morph is
+  true when the name handoff happened (normal ending) — the Hero then keeps
+  its BHAVITH row static and staggers in only the rest; false on skip /
+  reduced motion, where the Hero replays its full entrance.
+*/
+export const REVEAL_EVENT = "bp:intro-reveal";
+
 type Phase = "play" | "collapse" | "name" | "exit" | "leaving" | "done";
 
 /* ── timeline (ms from mount) — tuning knobs ── */
 const T_COLLAPSE = 5200; // words get sucked into the dot
 const T_NAME = 6200;     // dot blooms into the name
-const T_EXIT = 8600;     // name gets pulled back into the dot
-const T_LEAVE = 9600;    // cream overlay starts fading into the page
-const T_DONE = 10250;    // unmount
+const T_EXIT = 8600;     // ink floods; the name slides up onto the Hero spot
+const T_LEAVE = 9600;    // overlay starts dissolving (flood covered by now)
+const T_DONE = 10200;    // unmount
+const T_SKIP_FLOOD = 800; // skip path: flood needs to cover before the fade
 
 /* collapse point (viewport %) — everything funnels toward this */
 const CX = 50;
@@ -112,8 +126,29 @@ const WORD_DELAY = (i: number) => 0.9 + i * 0.145;
 export default function DoodleIntro() {
   const [phase, setPhase] = useState<Phase>("play");
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const skipped = useRef(false);
   const reduced = useReducedMotion();
   const isHome = usePathname() === "/";
+
+  /*
+    Where the Hero's "BHAVITH" row sits, relative to the collapse point —
+    measured off the live DOM (the Hero is already mounted underneath) when
+    the exit starts, so the slide-up lands exactly on the wordmark.
+  */
+  const [morphTo, setMorphTo] = useState<{ dx: number; dy: number } | null>(null);
+  useEffect(() => {
+    if (phase !== "exit") return;
+    const el = document.querySelector<HTMLElement>(".hs-name-row .hs-name-main");
+    if (el) {
+      const r = el.getBoundingClientRect();
+      setMorphTo({
+        dx: r.left + r.width / 2 - window.innerWidth * (CX / 100),
+        dy: r.top + r.height / 2 - window.innerHeight * (CY / 100),
+      });
+    } else {
+      setMorphTo({ dx: 0, dy: -window.innerHeight * 0.22 });
+    }
+  }, [phase]);
 
   // Decided once, on the first render of this page load. On the server there
   // is no window, and "/" is only prerendered for the landing page — so this
@@ -158,16 +193,28 @@ export default function DoodleIntro() {
   useEffect(() => {
     if (!shouldPlay) return;
     const steps: [number, Phase][] = reduced
-      ? [[1800, "leaving"], [2400, "done"]]
+      ? [[1800, "leaving"], [2500, "done"]]
       : [[T_COLLAPSE, "collapse"], [T_NAME, "name"], [T_EXIT, "exit"], [T_LEAVE, "leaving"], [T_DONE, "done"]];
     timers.current = steps.map(([t, p]) => setTimeout(() => setPhase(p), t));
     return () => timers.current.forEach(clearTimeout);
   }, [shouldPlay, reduced]);
 
+  // Cue the Hero's entrance as the flooded overlay starts to dissolve.
+  useEffect(() => {
+    if (phase !== "leaving") return;
+    const morph = !skipped.current && !reduced;
+    const t = setTimeout(
+      () => window.dispatchEvent(new CustomEvent(REVEAL_EVENT, { detail: { morph } })),
+      skipped.current && !reduced ? T_SKIP_FLOOD : 0,
+    );
+    return () => clearTimeout(t);
+  }, [phase, reduced]);
+
   const skip = () => {
     timers.current.forEach(clearTimeout);
+    skipped.current = true;
     setPhase("leaving");
-    timers.current = [setTimeout(() => setPhase("done"), 700)];
+    timers.current = [setTimeout(() => setPhase("done"), T_SKIP_FLOOD + 700)];
   };
 
   // Esc skips too.
@@ -180,22 +227,36 @@ export default function DoodleIntro() {
   if (!shouldPlay || !isHome || phase === "done") return null;
 
   const collapsing = phase !== "play";
-  const stage = phase === "leaving" ? "leaving" : "playing";
+  const leaving = phase === "leaving";
+  const morphing = phase === "exit" || phase === "leaving";
+
+  /* Overlay opacity lives on the root — the fade timing differs per path
+     (normal: flood already covered during exit → fade at once; skip: wait
+     for the flood to cover first). */
+  const rootFade = {
+    animate: { opacity: leaving ? 0 : 1 },
+    transition: {
+      duration: reduced ? 0.65 : 0.5,
+      ease: "easeOut" as const,
+      delay: leaving && skipped.current && !reduced ? T_SKIP_FLOOD / 1000 : 0,
+    },
+    style: { pointerEvents: (leaving ? "none" : "auto") as React.CSSProperties["pointerEvents"] },
+  };
 
   /* Reduced motion: calm name card, no choreography. */
   if (reduced) {
     return (
-      <div className="di-root" data-stage={stage}>
+      <motion.div className="di-root" {...rootFade}>
         <div className="di-center">
-          <span className="di-name">Bhavith</span>
+          <span className="di-name">BHAVITH</span>
         </div>
         <button className="di-skip" onClick={skip}>Skip</button>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="di-root" data-stage={stage} aria-hidden="true">
+    <motion.div className="di-root" aria-hidden="true" {...rootFade}>
       {/* WELCOME — stamps in first, dead center */}
       <Anchor x={CX} y={41}>
         <motion.span
@@ -246,66 +307,98 @@ export default function DoodleIntro() {
           animate={
             phase === "collapse" ? { scale: 1 }
             : phase === "name" ? { scale: [1, 2.6, 0] }
-            : phase === "exit" || phase === "leaving" ? { scale: [0, 1, 0] }
             : { scale: 0 }
           }
           transition={
             phase === "collapse" ? { duration: 0.3, delay: 0.5, ease: EASE_OUT }
             : phase === "name" ? { duration: 0.5, times: [0, 0.45, 1], ease: "easeInOut" }
-            : { duration: 0.7, delay: 0.35, times: [0, 0.55, 1], ease: "easeInOut" }
+            : { duration: 0.2 }
           }
         />
       </Anchor>
 
-      {/* the name card that blooms out of the dot */}
+      {/* dark ink floods the page behind the name, then dissolves into the Hero */}
       <Anchor x={CX} y={CY}>
-        <motion.div
-          className="di-center"
-          initial={{ scale: 0, opacity: 0 }}
+        <motion.span
+          className="di-flood"
+          initial={{ scale: 0 }}
+          animate={morphing ? { scale: 7 } : { scale: 0 }}
+          transition={{ duration: 0.7, delay: 0.05, ease: "easeIn" }}
+        />
+      </Anchor>
+
+      {/* the wordmark: blooms out of the dot in the Hero's own type, then
+          slides up onto the measured Hero position as the ink rises */}
+      <Anchor x={CX} y={CY}>
+        <motion.span
+          className="di-bigname"
+          initial={{ scale: 0, opacity: 0, x: 0, y: 0, color: INK }}
           animate={
-            phase === "name" ? { scale: 1, opacity: 1 }
-            : phase === "exit" || phase === "leaving" ? { scale: 0, opacity: 0, rotate: -14 }
-            : { scale: 0, opacity: 0 }
+            phase === "name" ? { scale: 0.55, opacity: 1, x: 0, y: 0, color: INK }
+            : morphing
+              ? {
+                  scale: 1, opacity: 1,
+                  x: morphTo?.dx ?? 0,
+                  y: morphTo?.dy ?? -220,
+                  color: "#f4ecd8",
+                }
+            : { scale: 0, opacity: 0, color: INK }
           }
           transition={
             phase === "name" ? { duration: 0.55, delay: 0.15, ease: EASE_OUT }
-            : { duration: 0.55, ease: EASE_IN }
+            : morphing
+              ? {
+                  duration: 0.95, ease: [0.65, 0, 0.15, 1],
+                  // stay ink until the flood has risen behind the name
+                  color: { delay: 0.6, duration: 0.3, ease: "easeIn" },
+                }
+            : { duration: 0.3 }
           }
         >
-          <motion.span
-            className="di-hello"
-            initial={{ opacity: 0, y: 8, rotate: 0 }}
-            animate={phase === "name" ? { opacity: 1, y: 0, rotate: 6 } : {}}
-            transition={{ duration: 0.35, delay: 0.9, ease: EASE_OUT }}
-          >
-            hello!
-          </motion.span>
+          BHAVITH
+        </motion.span>
+      </Anchor>
 
-          <span className="di-name">Bhavith</span>
-
-          <svg className="di-underline" viewBox="0 0 260 18" aria-hidden="true">
-            <motion.path
-              d="M6 11 C 50 4, 96 15, 140 9 S 224 6, 254 10"
-              fill="none" stroke={TERRA} strokeWidth="4" strokeLinecap="round"
-              initial={{ pathLength: 0 }}
-              animate={phase === "name" ? { pathLength: 1 } : {}}
-              transition={{ duration: 0.5, delay: 0.45, ease: "easeOut" }}
-            />
-          </svg>
-
-          <motion.div
-            className="di-stamp"
-            initial={{ scale: 0, rotate: 18, opacity: 0 }}
-            animate={phase === "name" ? { scale: 1, rotate: -8, opacity: 1 } : {}}
-            transition={{ duration: 0.4, delay: 0.7, ease: EASE_OUT }}
-          >
-            <StampArt />
-          </motion.div>
+      {/* hello! + stamp orbit the name, and whisk away before the slide-up */}
+      <Anchor x={CX + 13} y={CY - 8}>
+        <motion.span
+          className="di-hello"
+          initial={{ opacity: 0, y: 8, rotate: 0, scale: 1 }}
+          animate={
+            phase === "name" ? { opacity: 1, y: 0, rotate: 6 }
+            : morphing ? { opacity: 0, scale: 0 }
+            : {}
+          }
+          transition={
+            phase === "name"
+              ? { duration: 0.35, delay: 0.9, ease: EASE_OUT }
+              : { duration: 0.3, ease: EASE_IN }
+          }
+        >
+          hello!
+        </motion.span>
+      </Anchor>
+      <Anchor x={CX - 15} y={CY - 9}>
+        <motion.div
+          className="di-stamp"
+          initial={{ scale: 0, rotate: 18, opacity: 0 }}
+          animate={
+            phase === "name" ? { scale: 1, rotate: -8, opacity: 1 }
+            : morphing ? { scale: 0, opacity: 0, rotate: 24 }
+            : {}
+          }
+          transition={
+            phase === "name"
+              ? { duration: 0.4, delay: 0.7, ease: EASE_OUT }
+              : { duration: 0.3, ease: EASE_IN }
+          }
+        >
+          <StampArt />
         </motion.div>
       </Anchor>
 
       <button className="di-skip" onClick={skip}>Skip</button>
-    </div>
+    </motion.div>
   );
 }
 

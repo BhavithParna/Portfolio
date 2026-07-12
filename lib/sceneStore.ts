@@ -8,7 +8,7 @@ import { useSyncExternalStore } from "react";
   home from an inner page. Module state survives client-side navigation.
 */
 
-export type Scene = "home" | "library" | "contact";
+export type Scene = "home" | "about" | "library" | "contact";
 
 let scene: Scene = "home";
 const listeners = new Set<() => void>();

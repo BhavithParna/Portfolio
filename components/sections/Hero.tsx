@@ -1,103 +1,63 @@
 "use client";
 
-/*
-  S-curve racing-track lines — mathematically exact parallel semicircles.
-  Each path: horizontal → right-side semicircle → horizontal → left-side semicircle → horizontal
-  First arc centre: (800, 280).  Second arc centre: (200, 280+r+r).
-  Six lines, radii 140→220 in steps of 16px.
-*/
-const LINES = [
-  "M -120 140 H 800 A 140 140 0 0 1 800 420 H 200 A 140 140 0 0 0 200 700  H 1380",
-  "M -120 124 H 800 A 156 156 0 0 1 800 436 H 200 A 156 156 0 0 0 200 748  H 1380",
-  "M -120 108 H 800 A 172 172 0 0 1 800 452 H 200 A 172 172 0 0 0 200 796  H 1380",
-  "M -120  92 H 800 A 188 188 0 0 1 800 468 H 200 A 188 188 0 0 0 200 844  H 1380",
-  "M -120  76 H 800 A 204 204 0 0 1 800 484 H 200 A 204 204 0 0 0 200 892  H 1380",
-  "M -120  60 H 800 A 220 220 0 0 1 800 500 H 200 A 220 220 0 0 0 200 940  H 1380",
-];
-
-function BackgroundArt() {
-  return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-      <svg
-        viewBox="-120 20 1500 960"
-        xmlns="http://www.w3.org/2000/svg"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden="true"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
-      >
-        {/* Base static lines — shape/color/size unchanged */}
-        {LINES.map((d, i) => (
-          <path
-            key={i}
-            d={d}
-            stroke="rgba(237,232,223,0.13)"
-            strokeWidth="1.5"
-            fill="none"
-            strokeLinecap="round"
-          />
-        ))}
-
-        {/* Electricity: accent dot flowing along each track */}
-        {LINES.map((d, i) => (
-          <path
-            key={`glow-${i}`}
-            d={d}
-            stroke="rgba(200,109,83,0.6)"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-            pathLength="1"
-            style={{
-              strokeDasharray: "0.05 0.95",
-              animation: `race-glow ${5.5 + i * 0.65}s linear ${-(i * 1.1)}s infinite`,
-            }}
-          />
-        ))}
-      </svg>
-
-      {/* Vignette: darken corners, clear centre */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "radial-gradient(ellipse 80% 70% at 55% 38%, transparent 40%, rgba(13,10,8,0.55) 100%)",
-      }} />
-
-      {/* Fade out near content at the bottom */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "linear-gradient(to bottom, transparent 0%, transparent 52%, var(--bg) 88%)",
-      }} />
-    </div>
-  );
-}
+import { useEffect, useState } from "react";
+import { REVEAL_EVENT } from "@/components/DoodleIntro";
 
 export default function Hero() {
+  /*
+    On a fresh landing the Hero mounts underneath the intro overlay, so its
+    entrance stagger would play unseen. When the intro starts dissolving it
+    fires REVEAL_EVENT; bumping the key remounts the section so the entrance
+    replays at the reveal. detail.morph tells us the intro's "BHAVITH" just
+    slid up onto our wordmark: keep that row perfectly still (the overlay
+    crossfades over it) and stagger in only the rest.
+  */
+  const [take, setTake] = useState(0);
+  const [morph, setMorph] = useState(false);
+  useEffect(() => {
+    const replay = (e: Event) => {
+      setMorph(Boolean((e as CustomEvent).detail?.morph));
+      setTake((t) => t + 1);
+    };
+    window.addEventListener(REVEAL_EVENT, replay);
+    return () => window.removeEventListener(REVEAL_EVENT, replay);
+  }, []);
+
   return (
-    <section className="hero" id="hero" style={{ position: "relative" }}>
-      <BackgroundArt />
+    <section className="hs-hero" id="hero" key={take}>
+      <div className="hs-bg" style={{ backgroundImage: "url(/images/hero-bg.jpg)" }} aria-hidden="true" />
+      <div className="hs-overlay" />
 
-      <div className="hero-content" style={{ position: "relative", zIndex: 1 }}>
-
-        <p className="t-label hero-item" style={{ marginBottom: "2.5rem", animationDelay: "0.1s" }}>
-          Bhavith Parna &nbsp;·&nbsp; Hyderabad, India &nbsp;·&nbsp; B.Tech Biomedical Engineering
-        </p>
-
-        <h1 className="t-display hero-item" style={{ maxWidth: 820, marginBottom: "2rem", animationDelay: "0.25s" }}>
-          Building at the<br />
-          <em>edge of the</em><br />
-          human body.
-        </h1>
-
-        <p className="t-body hero-item" style={{ maxWidth: 520, marginBottom: "3rem", fontSize: "1.05rem", animationDelay: "0.4s" }}>
-          I work at the intersection of neurotechnology, embedded hardware, and clinical medicine —
-          engineering systems where the stakes are real and the hardware has to function.
-        </p>
-
-        <div className="hero-item" style={{ display: "flex", gap: "0.85rem", flexWrap: "wrap", paddingBottom: "3.5rem", animationDelay: "0.55s" }}>
-          <a href="#library" className="btn btn-filled btn-pulse">Explore the Work</a>
-          <a href="/bhavith-parna-cv.pdf" download className="btn btn-outlined">Download CV</a>
+      <div className="hs-content">
+        <div className="hs-name">
+          {/* BHAVITH: held static on a morph reveal — the intro's wordmark
+              crossfades exactly over it (only the echo outline fades in) */}
+          <div
+            className={morph ? "hs-name-row" : "hs-name-row hero-item"}
+            style={morph ? undefined : { animationDelay: "0.25s" }}
+          >
+            <span
+              className={morph ? "hs-name-echo hero-item" : "hs-name-echo"}
+              style={{ fontWeight: 700, WebkitTextStroke: "1.5px #c1502e", animationDelay: morph ? "0.5s" : undefined }}
+            >
+              BHAVITH
+            </span>
+            <span className="hs-name-main" style={{ fontWeight: 700, color: "#f4ecd8" }}>BHAVITH</span>
+          </div>
+          <div className="hs-name-row hero-item" style={{ animationDelay: morph ? "0.15s" : "0.35s" }}>
+            <span className="hs-name-echo" style={{ fontStyle: "italic", fontWeight: 600, WebkitTextStroke: "1.5px #3c7268" }}>Parna</span>
+            <span className="hs-name-main" style={{ fontStyle: "italic", fontWeight: 600, color: "#e8763f" }}>Parna</span>
+          </div>
         </div>
 
+        <p className="hs-role hero-item" style={{ animationDelay: morph ? "0.45s" : "0.4s" }}>
+          Biomedical Engineer
+        </p>
       </div>
+
+      <p className="hs-credit hero-item" style={{ animationDelay: "0.6s" }}>
+        Photo &mdash; <a href="https://unsplash.com/@ilevyv" target="_blank" rel="noopener noreferrer">Ivan Levy</a> / Unsplash
+      </p>
     </section>
   );
 }

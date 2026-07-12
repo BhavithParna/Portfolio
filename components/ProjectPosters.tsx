@@ -418,15 +418,26 @@ export default function ProjectPosters({
   style,
 }: PostersProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const activeRef = useRef(-1);
   const callbacksRef = useRef({ onActiveChange, onSelect });
   callbacksRef.current = { onActiveChange, onSelect };
 
   useEffect(() => {
     const container = containerRef.current;
-    const canvasEl = canvasRef.current;
-    if (!container || !canvasEl) return;
+    if (!container) return;
+
+    /*
+      A fresh canvas per effect run. The cleanup below kills this canvas's
+      WebGL context; under React StrictMode the effect immediately re-runs,
+      and getContext() on a reused JSX canvas would hand ogl the same
+      already-lost context — renderer.render() then crashes. A new element
+      always gets a live context.
+    */
+    const canvasEl = document.createElement("canvas");
+    canvasEl.style.display = "block";
+    canvasEl.style.width = "100%";
+    canvasEl.style.height = "100%";
+    container.appendChild(canvasEl);
 
     let destroyed = false;
     let raf = 0;
@@ -560,6 +571,7 @@ export default function ProjectPosters({
       container.removeEventListener("touchend", onUp);
       window.removeEventListener("resize", onResize);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
+      canvasEl.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entries, planeWidth, planeHeight, distortion, scrollEase, cameraFov, cameraZ]);
@@ -569,8 +581,6 @@ export default function ProjectPosters({
       ref={containerRef}
       className={className}
       style={{ width: "100%", height: "100%", overflow: "hidden", position: "relative", cursor: "grab", touchAction: "none", ...style }}
-    >
-      <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "100%" }} />
-    </div>
+    />
   );
 }

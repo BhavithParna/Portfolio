@@ -21,10 +21,10 @@ import { setScene, useScene, type Scene } from "@/lib/sceneStore";
   swap the home stage (navigating home first if needed); the workshop stamp
   is a page link.
 
-  On immersive routes (HIDDEN_ROUTES) the dock stays tucked away — a small
-  paper tab peeks at the bottom edge; bringing the cursor near it makes the
-  dock glide in from a random direction. It tucks back away when the mouse
-  wanders off.
+  On immersive views (HIDDEN_ROUTES, and the Hero landing scene) the dock
+  stays tucked away — a small paper tab peeks at the bottom edge; bringing
+  the cursor near it makes the dock glide in from a random direction. It
+  tucks back away when the mouse wanders off.
 */
 
 const HIDDEN_ROUTES = new Set(["/stare"]);
@@ -42,6 +42,7 @@ const INK = "#33271C";
 
 const ITEMS: Item[] = [
   { id: "home", scene: "home", label: "home sweet home", tint: "#F6EFDD", glyph: <HouseGlyph /> },
+  { id: "about", scene: "about", label: "about me", tint: "#EFDCC8", glyph: <QuillGlyph /> },
   { id: "library", scene: "library", label: "the library", tint: "#EAD9B8", glyph: <BooksGlyph /> },
   { id: "workshop", href: "/projects", label: "the workshop", tint: "#E8D5C4", glyph: <WrenchGlyph /> },
   { id: "contact", scene: "contact", label: "send me a letter", tint: "#DCE4DC", glyph: <EnvelopeGlyph /> },
@@ -61,7 +62,8 @@ export default function DockNav() {
   const router = useRouter();
   const scene = useScene();
 
-  const tucked = HIDDEN_ROUTES.has(pathname);
+  // The Hero landing is a full-bleed photo — keep it clean too.
+  const tucked = HIDDEN_ROUTES.has(pathname) || (pathname === "/" && scene === "home");
   const [revealed, setRevealed] = useState(false);
   const [entry, setEntry] = useState(ENTRIES[2]);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -94,6 +96,9 @@ export default function DockNav() {
   const onScene = (s: Scene) => {
     setScene(s);
     if (pathname !== "/") router.push("/");
+    // Jumping to the (tucked) Hero scene from the dock: the cursor is on the
+    // dock right now, so keep it up — it tucks itself once the mouse leaves.
+    if (s === "home") setRevealed(true);
   };
 
   return (
@@ -125,7 +130,7 @@ export default function DockNav() {
           {ITEMS.map((item, i) => (
             <span key={item.id} style={{ display: "flex", alignItems: "flex-end" }}>
               {/* perforation divider sets the letter stamp apart at the end */}
-              {i === 3 && <span className="dock-divider" aria-hidden="true" />}
+              {i === 4 && <span className="dock-divider" aria-hidden="true" />}
               <DockStamp
                 item={item}
                 mouseX={mouseX}
@@ -166,7 +171,7 @@ function DockStamp({
     <motion.span
       ref={ref}
       className="dock-stamp"
-      style={{ scale, background: item.tint }}
+      style={{ scale, backgroundColor: item.tint }}
       whileTap={{ scale: 0.92 }}
     >
       {item.glyph}
@@ -220,6 +225,16 @@ function EnvelopeGlyph() {
     <svg viewBox="0 0 24 24" className="dock-glyph" aria-hidden="true">
       <rect {...G} x="4" y="6.5" width="16" height="11.5" rx="1" />
       <path {...G} d="M4.5 7.5 L12 13.5 L19.5 7.5" />
+    </svg>
+  );
+}
+
+function QuillGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" className="dock-glyph" aria-hidden="true">
+      <path {...G} d="M19.5 4.5 C14 5 8 10 5.5 17.5" />
+      <path {...G} d="M19.5 4.5 C15.5 4.7 12.7 7 11 10.5 C13 10.2 15.8 9 17.8 6.2 C18.4 5.35 19 4.85 19.5 4.5 Z" />
+      <path {...G} d="M4.5 19.5 L6.3 16.7" />
     </svg>
   );
 }

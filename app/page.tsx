@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
 import Library from "@/components/sections/Library";
 import Contact from "@/components/sections/Contact";
@@ -21,7 +22,8 @@ export default function Home() {
     <div className="stage">
       <AnimatePresence mode="wait">
         <motion.div key={scene} className="scene" {...sceneFade}>
-          {scene === "home" && <About />}
+          {scene === "home" && <Hero />}
+          {scene === "about" && <About />}
           {scene === "library" && <Library />}
           {scene === "contact" && <Contact />}
         </motion.div>
