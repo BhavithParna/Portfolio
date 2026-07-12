@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { shelveProjects } from "@/lib/projects";
 
 /* ─── Texture: SVG noise as data URI for bookcloth grain ─────── */
@@ -66,16 +66,40 @@ const bookMeta = [
   },
 ];
 
-/* Life books use the same rich approach */
-const lifeMeta = [
+/* A book with no chapter behind it answers with a borrowed line instead. */
+type Quote = { line: string; source: string; aside: string };
+
+/* Life books use the same rich approach. Books without an href are
+   chapters that don't exist yet — clicking them pins a quote note. */
+const lifeMeta: {
+  title: string; sub: string;
+  w: number; h: number; mb: number;
+  gradient: string; foil: string;
+  href?: string; quote?: Quote;
+}[] = [
   {
-    href: "/hobbies",
-    title: "Off the Clock",
-    sub: "Hobbies",
-    w: 118, h: 296, mb: 3,
-    gradient: "linear-gradient(to right, #6E3414 0%, #6E3414 6%, #94481E 16%, #B85E2A 30%, #D07038 50%, #B85E2A 70%, #94481E 84%, #6E3414 94%, #6E3414 100%)",
+    title: "Basketball",
+    sub: "Pick-up Games",
+    w: 112, h: 298, mb: 2,
+    gradient: "linear-gradient(to right, #5C2408 0%, #5C2408 6%, #7E3810 16%, #A04E1C 30%, #B65E26 50%, #A04E1C 70%, #7E3810 84%, #5C2408 94%, #5C2408 100%)",
     foil: "#F2E4C0",
-    italic: false,
+    quote: {
+      line: "You miss 100% of the shots you don't take. —Wayne Gretzky",
+      source: "Michael Scott, The Office",
+      aside: "this page missed its shot too. coming soon.",
+    },
+  },
+  {
+    title: "Reading",
+    sub: "The Nightstand",
+    w: 102, h: 284, mb: 4,
+    gradient: "linear-gradient(to right, #142E18 0%, #142E18 6%, #1F4322 16%, #2C5A30 30%, #386C3C 50%, #2C5A30 70%, #1F4322 84%, #142E18 94%, #142E18 100%)",
+    foil: "#E8DCB0",
+    quote: {
+      line: "I'll be back.",
+      source: "The Terminator",
+      aside: "so will this chapter.",
+    },
   },
   {
     href: "/music",
@@ -84,7 +108,6 @@ const lifeMeta = [
     w: 128, h: 312, mb: 0,
     gradient: "linear-gradient(to right, #1A3A48 0%, #1A3A48 6%, #274E5E 16%, #386A7E 30%, #4A8296 50%, #386A7E 70%, #274E5E 84%, #1A3A48 94%, #1A3A48 100%)",
     foil: "#EAD9A8",
-    italic: false,
   },
   {
     href: "/luca",
@@ -93,7 +116,6 @@ const lifeMeta = [
     w: 108, h: 304, mb: 5,
     gradient: "linear-gradient(to right, #6E5212 0%, #6E5212 6%, #927018 16%, #B58E22 30%, #D0A634 50%, #B58E22 70%, #927018 84%, #6E5212 94%, #6E5212 100%)",
     foil: "#3A2C12",
-    italic: true,
   },
   {
     href: "/horror",
@@ -102,7 +124,6 @@ const lifeMeta = [
     w: 116, h: 298, mb: 2,
     gradient: "linear-gradient(to right, #2A0808 0%, #2A0808 6%, #460E0C 16%, #661614 30%, #8A2420 50%, #661614 70%, #460E0C 84%, #2A0808 94%, #2A0808 100%)",
     foil: "#E0C29A",
-    italic: false,
   },
   {
     href: "/stare",
@@ -111,7 +132,48 @@ const lifeMeta = [
     w: 112, h: 292, mb: 4,
     gradient: "linear-gradient(to right, #0E2A2E 0%, #0E2A2E 6%, #1C4A48 16%, #2F6E66 30%, #8A4630 50%, #2F6E66 70%, #1C4A48 84%, #0E2A2E 94%, #0E2A2E 100%)",
     foil: "#E8C87A",
-    italic: true,
+  },
+  {
+    title: "Recipes",
+    sub: "The Kitchen",
+    w: 116, h: 300, mb: 0,
+    gradient: "linear-gradient(to right, #A89468 0%, #A89468 6%, #C2AE80 16%, #D6C598 30%, #E5D6AE 50%, #D6C598 70%, #C2AE80 84%, #A89468 94%, #A89468 100%)",
+    foil: "#5A4632",
+    quote: {
+      line: "Anyone can cook.",
+      source: "Chef Gusteau, Ratatouille",
+      aside: "writing them down, though… page in progress.",
+    },
+  },
+];
+
+/* Two skinny volumes lying flat in a pile beside Recipes — the Kitchen's
+   companion volumes, shelved the lazy way. */
+const kitchenPile: {
+  title: string; w: number; h: number; tilt: number; shift: number;
+  gradient: string; foil: string; quote: Quote;
+}[] = [
+  {
+    title: "Coffee",
+    w: 148, h: 34, tilt: -1.2, shift: 14,
+    gradient: "linear-gradient(to bottom, #241408 0%, #3A2412 30%, #4C3018 50%, #3A2412 70%, #241408 100%)",
+    foil: "#E8D5AC",
+    quote: {
+      line: "That's a damn fine cup of coffee.",
+      source: "Agent Cooper, Twin Peaks",
+      aside: "this one's still brewing.",
+    },
+  },
+  {
+    title: "Food",
+    w: 166, h: 38, tilt: 0, shift: 0,
+    gradient: "linear-gradient(to bottom, #58180E 0%, #7C2A1A 30%, #933824 50%, #7C2A1A 70%, #58180E 100%)",
+    foil: "#F2E0C4",
+    quote: {
+      line: "There is no secret ingredient.",
+      source: "Mr. Ping, Kung Fu Panda",
+      aside: "there's no page either. yet.",
+    },
   },
 ];
 
@@ -127,19 +189,18 @@ function FoilRule({ color, opacity = 0.55 }: { color: string; opacity?: number }
 
 /* ─── Spine Book (project books — narrow vertical spine) ─────── */
 function SpineBook({
-  href, title, context, award, w, h, gradient, foil, mb, volume, lean = 0,
+  href, title, context, award, w, h, gradient, foil, mb, volume, lean = 0, onActivate,
 }: {
-  href: string; title: string; context: string;
+  href?: string; title: string; context: string;
   award: boolean; w: number; h: number;
   gradient: string; foil: string; mb: number;
   volume?: string; lean?: number;
+  onActivate?: (e: React.MouseEvent<HTMLElement>) => void;
 }) {
   const rest = `rotate(${lean}deg)`;
-  return (
-    <Link
-      href={href}
-      title={volume ? `${title} (Vol. ${volume})` : title}
-      style={{
+  const shared = {
+    title: volume ? `${title} (Vol. ${volume})` : title,
+    style: {
         flexShrink: 0,
         width: w,
         height: h,
@@ -158,20 +219,23 @@ function SpineBook({
         textDecoration: "none",
         transition: "transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease",
         boxShadow: "3px 0 8px rgba(0,0,0,0.5), -1px 0 4px rgba(0,0,0,0.3), 0 2px 0 rgba(255,255,255,0.03)",
-      }}
-      onMouseEnter={e => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.transform = `translateY(-20px) ${rest}`;
-        el.style.boxShadow = "3px 0 8px rgba(0,0,0,0.4), -1px 0 4px rgba(0,0,0,0.3), 0 24px 48px rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.6)";
-        el.style.zIndex = "30";
-      }}
-      onMouseLeave={e => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.transform = rest;
-        el.style.boxShadow = "3px 0 8px rgba(0,0,0,0.5), -1px 0 4px rgba(0,0,0,0.3), 0 2px 0 rgba(255,255,255,0.03)";
-        el.style.zIndex = "1";
-      }}
-    >
+    } as React.CSSProperties,
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+      const el = e.currentTarget as HTMLElement;
+      el.style.transform = `translateY(-20px) ${rest}`;
+      el.style.boxShadow = "3px 0 8px rgba(0,0,0,0.4), -1px 0 4px rgba(0,0,0,0.3), 0 24px 48px rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.6)";
+      el.style.zIndex = "30";
+    },
+    onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+      const el = e.currentTarget as HTMLElement;
+      el.style.transform = rest;
+      el.style.boxShadow = "3px 0 8px rgba(0,0,0,0.5), -1px 0 4px rgba(0,0,0,0.3), 0 2px 0 rgba(255,255,255,0.03)";
+      el.style.zIndex = "1";
+    },
+  };
+
+  const inner = (
+    <>
       {/* Bookcloth grain texture */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1,
@@ -270,7 +334,97 @@ function SpineBook({
           <FoilRule color={foil} opacity={0.4} />
         </div>
       </div>
-    </Link>
+    </>
+  );
+
+  if (href) {
+    return <Link href={href} {...shared}>{inner}</Link>;
+  }
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onActivate}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onActivate?.(e as unknown as React.MouseEvent<HTMLElement>); }}
+      {...shared}
+    >
+      {inner}
+    </div>
+  );
+}
+
+/* ─── Flat Book (a skinny volume lying on its side) ──────────── */
+function FlatBook({
+  title, w, h, tilt, shift, gradient, foil, onActivate,
+}: {
+  title: string; w: number; h: number; tilt: number; shift: number;
+  gradient: string; foil: string;
+  onActivate: (e: React.MouseEvent<HTMLElement>) => void;
+}) {
+  const rest = `rotate(${tilt}deg)`;
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      title={title}
+      onClick={onActivate}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onActivate(e as unknown as React.MouseEvent<HTMLElement>); }}
+      style={{
+        width: w,
+        height: h,
+        marginLeft: shift,
+        transform: rest,
+        transformOrigin: "bottom left",
+        background: gradient,
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 10,
+        cursor: "pointer",
+        transition: "transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease",
+        boxShadow: "0 3px 8px rgba(0,0,0,0.5), 0 -1px 3px rgba(0,0,0,0.2)",
+      }}
+      onMouseEnter={e => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.transform = `translateY(-6px) ${rest}`;
+        el.style.boxShadow = "0 12px 24px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)";
+        el.style.zIndex = "30";
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.transform = rest;
+        el.style.boxShadow = "0 3px 8px rgba(0,0,0,0.5), 0 -1px 3px rgba(0,0,0,0.2)";
+        el.style.zIndex = "1";
+      }}
+    >
+      {/* Bookcloth grain */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1,
+        backgroundImage: `
+          ${NOISE},
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 4px)
+        `,
+      }} />
+      {/* Top edge highlight */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: 1.5,
+        background: "linear-gradient(to right, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.05) 100%)",
+        pointerEvents: "none", zIndex: 2,
+      }} />
+      <span style={{ width: 16, height: 1, background: foil, opacity: 0.5, position: "relative", zIndex: 3 }} />
+      <span style={{
+        position: "relative", zIndex: 3,
+        fontFamily: "'EB Garamond', Georgia, serif",
+        fontSize: "0.78rem",
+        color: foil,
+        letterSpacing: "0.08em",
+        textShadow: "0 1px 2px rgba(0,0,0,0.7)",
+      }}>
+        {title}
+      </span>
+      <span style={{ width: 16, height: 1, background: foil, opacity: 0.5, position: "relative", zIndex: 3 }} />
+    </div>
   );
 }
 
@@ -391,6 +545,26 @@ function ShelfPlank() {
 /* ─── Main export ────────────────────────────────────────────── */
 export default function Library() {
   const sectionRef = useRef<HTMLElement>(null);
+  const lifeWrapRef = useRef<HTMLDivElement>(null);
+  const [note, setNote] = useState<(Quote & { x: number }) | null>(null);
+
+  /* Clicking anywhere dismisses the pinned quote note */
+  useEffect(() => {
+    if (!note) return;
+    const close = () => setNote(null);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [note]);
+
+  const showQuote = (e: React.MouseEvent<HTMLElement>, q: Quote) => {
+    e.stopPropagation();
+    const wrap = lifeWrapRef.current;
+    if (!wrap) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const wr = wrap.getBoundingClientRect();
+    const x = Math.min(Math.max(r.left + r.width / 2 - wr.left, 150), wr.width - 150);
+    setNote(prev => (prev && prev.line === q.line ? null : { ...q, x }));
+  };
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -465,21 +639,98 @@ export default function Library() {
         </div>
 
         {/* ── Life shelf ── */}
-        <div className="reveal sb-shelf">
-          {lifeMeta.map(b => (
-            <SpineBook
-              key={b.href}
-              href={b.href}
-              title={b.title}
-              context={b.sub}
-              award={false}
-              w={b.w}
-              h={b.h}
-              gradient={b.gradient}
-              foil={b.foil}
-              mb={b.mb}
-            />
-          ))}
+        <div className="reveal" ref={lifeWrapRef} style={{ position: "relative" }}>
+          <div className="sb-shelf">
+            {lifeMeta.map(b => (
+              <SpineBook
+                key={b.title}
+                href={b.href}
+                title={b.title}
+                context={b.sub}
+                award={false}
+                w={b.w}
+                h={b.h}
+                gradient={b.gradient}
+                foil={b.foil}
+                mb={b.mb}
+                onActivate={b.quote ? e => showQuote(e, b.quote!) : undefined}
+              />
+            ))}
+
+            {/* The Kitchen's companion volumes, lying flat beside Recipes */}
+            <div style={{ display: "flex", flexDirection: "column", flexShrink: 0, marginLeft: 4 }}>
+              {kitchenPile.map(b => (
+                <FlatBook
+                  key={b.title}
+                  title={b.title}
+                  w={b.w}
+                  h={b.h}
+                  tilt={b.tilt}
+                  shift={b.shift}
+                  gradient={b.gradient}
+                  foil={b.foil}
+                  onActivate={e => showQuote(e, b.quote)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Pinned quote note — a chapter that isn't written yet */}
+          {note && (
+            <div style={{
+              position: "absolute",
+              top: 18,
+              left: note.x,
+              transform: "translateX(-50%) rotate(-1.5deg)",
+              zIndex: 60,
+              width: 272,
+              background: "#FBF4E2",
+              padding: "1.9rem 1.4rem 1.1rem",
+              boxShadow: "0 14px 34px rgba(30,20,8,0.45), 0 3px 8px rgba(30,20,8,0.25)",
+              cursor: "pointer",
+            }}>
+              {/* Tape strip */}
+              <div style={{
+                position: "absolute",
+                top: -11,
+                left: "50%",
+                transform: "translateX(-50%) rotate(2deg)",
+                width: 76,
+                height: 22,
+                background: "rgba(232,220,190,0.85)",
+                border: "1px solid rgba(160,140,100,0.25)",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+              }} />
+              <p style={{
+                fontFamily: "'EB Garamond', Georgia, serif",
+                fontStyle: "italic",
+                fontSize: "1.05rem",
+                lineHeight: 1.4,
+                color: "#33271C",
+              }}>
+                &ldquo;{note.line}&rdquo;
+              </p>
+              <p style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: "0.55rem",
+                fontWeight: 600,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "#6E5C49",
+                marginTop: "0.6rem",
+              }}>
+                — {note.source}
+              </p>
+              <p style={{
+                fontFamily: "'Caveat', cursive",
+                fontSize: "1.15rem",
+                color: "var(--sb-terra)",
+                marginTop: "0.8rem",
+              }}>
+                {note.aside}
+              </p>
+            </div>
+          )}
         </div>
         <ShelfPlank />
 

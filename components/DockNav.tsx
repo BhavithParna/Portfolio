@@ -17,9 +17,9 @@ import { setScene, useScene, type Scene } from "@/lib/sceneStore";
   layout, so it's available on every page.
 
   A cream paper tray of perforated "postage stamp" buttons with
-  cursor-proximity magnification and handwritten hover labels. The first
-  three stamps swap the home stage (navigating home first if needed); the
-  rest are page links.
+  cursor-proximity magnification and handwritten hover labels. Scene stamps
+  swap the home stage (navigating home first if needed); the workshop stamp
+  is a page link.
 
   On immersive routes (HIDDEN_ROUTES) the dock stays tucked away — a small
   paper tab peeks at the bottom edge; bringing the cursor near it makes the
@@ -43,9 +43,8 @@ const INK = "#33271C";
 const ITEMS: Item[] = [
   { id: "home", scene: "home", label: "home sweet home", tint: "#F6EFDD", glyph: <HouseGlyph /> },
   { id: "library", scene: "library", label: "the library", tint: "#EAD9B8", glyph: <BooksGlyph /> },
-  { id: "contact", scene: "contact", label: "send me a letter", tint: "#DCE4DC", glyph: <EnvelopeGlyph /> },
   { id: "workshop", href: "/projects", label: "the workshop", tint: "#E8D5C4", glyph: <WrenchGlyph /> },
-  { id: "stare", href: "/stare", label: "something to stare at", tint: "#D8E0E4", glyph: <SwirlGlyph /> },
+  { id: "contact", scene: "contact", label: "send me a letter", tint: "#DCE4DC", glyph: <EnvelopeGlyph /> },
 ];
 
 /* glide-in start points for hidden mode (picked at random per reveal) */
@@ -125,7 +124,7 @@ export default function DockNav() {
         >
           {ITEMS.map((item, i) => (
             <span key={item.id} style={{ display: "flex", alignItems: "flex-end" }}>
-              {/* perforation divider between scene stamps and page links */}
+              {/* perforation divider sets the letter stamp apart at the end */}
               {i === 3 && <span className="dock-divider" aria-hidden="true" />}
               <DockStamp
                 item={item}
@@ -230,14 +229,6 @@ function WrenchGlyph() {
     <svg viewBox="0 0 24 24" className="dock-glyph" aria-hidden="true">
       <path {...G} d="M13.5 8.5 a4 4 0 1 1 2 5.4 L8 21 a1.9 1.9 0 0 1 -2.7 -2.7 L12.8 11 a4 4 0 0 1 0.7 -2.5 Z" />
       <path {...G} d="M17 4.5 L14.5 7 L17 9.5 L19.5 7" />
-    </svg>
-  );
-}
-
-function SwirlGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" className="dock-glyph" aria-hidden="true">
-      <path {...G} d="M12 12 c0 -1.6 2.4 -1.6 2.4 0 c0 2.4 -4.8 2.4 -4.8 0 c0 -4 7.2 -4 7.2 0 c0 5.6 -9.6 5.6 -9.6 0 c0 -7.2 12 -7.2 12 0" />
     </svg>
   );
 }
