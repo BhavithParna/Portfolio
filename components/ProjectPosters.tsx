@@ -405,6 +405,8 @@ class Media {
 
 type PostersProps = {
   entries: Shelved[];
+  /** which poster is centred on mount — lets the page resume where it left off */
+  initialIndex?: number;
   onActiveChange?: (index: number) => void;
   /** fired the moment a poster is clicked, so the page can dress the exit */
   onOpenStart?: (index: number) => void;
@@ -422,6 +424,7 @@ type PostersProps = {
 
 export default function ProjectPosters({
   entries,
+  initialIndex = 0,
   onActiveChange,
   onOpenStart,
   onSelect,
@@ -438,6 +441,8 @@ export default function ProjectPosters({
   const activeRef = useRef(-1);
   const callbacksRef = useRef({ onActiveChange, onOpenStart, onSelect });
   callbacksRef.current = { onActiveChange, onOpenStart, onSelect };
+  // Read at build time only — a later change shouldn't yank the stack around.
+  const initialIndexRef = useRef(initialIndex);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -500,8 +505,10 @@ export default function ProjectPosters({
         length: entries.length,
         index, planeWidth, planeHeight, distortion,
       }));
-      // Open on poster 01, not the middle of the stack.
-      scroll.current = scroll.target = medias[0].y;
+      // Centre the poster we're resuming on (01 by default) rather than
+      // whatever happens to sit in the middle of the stack.
+      const start = Math.min(Math.max(initialIndexRef.current, 0), medias.length - 1);
+      scroll.current = scroll.target = medias[start].y;
     };
     build();
 

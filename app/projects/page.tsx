@@ -1,10 +1,34 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { shelveProjects, primaryCount } from "@/lib/projects";
+import { shelveProjects, primaryCount, type Shelved } from "@/lib/projects";
 import BackLink from "@/components/BackLink";
 import Ferrofluid from "@/components/Ferrofluid";
 import ProjectPosters from "@/components/ProjectPosters";
+
+/*
+  Opening a project stows its slug; coming back to the Workshop spends it, so
+  you land on the poster you left rather than being thrown back to 01. It's
+  spent on read, so arriving here any other way (the dock, a fresh visit)
+  still opens on 01.
+*/
+const RESUME_KEY = "workshop:resume";
+
+function stowResume(slug: string) {
+  try { sessionStorage.setItem(RESUME_KEY, slug); } catch {}
+}
+
+function spendResume(entries: Shelved[]) {
+  if (typeof window === "undefined") return 0;
+  try {
+    const slug = sessionStorage.getItem(RESUME_KEY);
+    sessionStorage.removeItem(RESUME_KEY);
+    const i = entries.findIndex(e => e.project.slug === slug);
+    return i >= 0 ? i : 0;
+  } catch {
+    return 0;
+  }
+}
 
 export default function ProjectsPage() {
   const [active, setActive] = useState(0);
@@ -15,6 +39,9 @@ export default function ProjectsPage() {
   const router = useRouter();
   // Stable identity — ProjectPosters rebuilds its whole scene when this changes.
   const entries = useMemo(() => shelveProjects(), []);
+  // Read once per mount. Safe to differ from the server (0): it only seeds the
+  // WebGL scroll, and the caption follows whatever poster ends up centred.
+  const startIndex = useMemo(() => spendResume(entries), [entries]);
   const current = entries[active];
 
   return (
@@ -50,9 +77,14 @@ export default function ProjectsPage() {
         <div style={{ position: "absolute", inset: 0, zIndex: 3 }}>
           <ProjectPosters
             entries={entries}
+            initialIndex={startIndex}
             onActiveChange={setActive}
             onOpenStart={() => setOpening(true)}
-            onSelect={i => router.push(`/projects/${entries[i].project.slug}`)}
+            onSelect={i => {
+              const { slug } = entries[i].project;
+              stowResume(slug);
+              router.push(`/projects/${slug}`);
+            }}
           />
         </div>
 

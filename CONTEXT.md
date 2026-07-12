@@ -739,3 +739,22 @@ Each entry records the date, a summary of the change, and the files affected.
   swiftshader, so mid-transition frames land late — the dive had to be captured
   with the veil hidden via an injected style to see it at all. Order and
   mechanics are verified; the *feel* of the 750ms still wants a live look.
+
+### 2026-07-12 — Workshop resumes on the poster you opened
+- **What:** Coming back from a project dumped you at poster 01 again, because
+  `ProjectPosters.build()` always seeded the scroll to `medias[0].y`. It now
+  takes an `initialIndex` prop (read once, through a ref, so a later change
+  can't yank the stack around mid-session). `/projects` stows the opened slug
+  in `sessionStorage` under `workshop:resume` and **spends it on read**, so
+  returning — via the page's "All Projects" link *or* the browser Back button —
+  lands on the poster you left, while arriving any other way (the dock, a cold
+  visit) still opens on 01. Keyed by slug, not index, so it survives the
+  catalogue being reordered.
+- **Hydration note:** `spendResume()` returns 0 on the server and possibly
+  non-zero on the client, which is fine — it only seeds the WebGL scroll, never
+  the markup. The caption still starts at `active = 0` on both sides and
+  corrects itself when the render loop reports the centred poster.
+- **Files:** `app/projects/page.tsx`, `components/ProjectPosters.tsx`.
+- **Verified:** `tsc` clean, build green. Headless round-trip: scrolled to 02,
+  opened it, came back via the link → caption reads 02; scrolled to 03, opened,
+  browser Back → reads 03; a cold visit to `/projects` afterwards → back to 01.
