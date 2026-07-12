@@ -676,6 +676,10 @@ Each entry records the date, a summary of the change, and the files affected.
   StrictMode fix under repeated loads — single-load smoke test pending;
   user should hard-reload `/projects`. If it still errors, the fix to
   re-examine is in `ProjectPosters.tsx` (fresh-canvas effect).
+  → **Now confirmed** (2026-07-12, round 3): `/projects` was loaded a dozen-odd
+  times across the round-3 capture runs — cold loads, reloads and client-side
+  returns — and the ferrofluid + posters rendered every time with no
+  `CONTEXT_LOST_WEBGL` and no `forEach` crash. The canvas-per-mount fix holds.
 - **Still pending:** CV pdf 404; PAT revoke; stale `ARCHITECTURE.md`.
 
 ### 2026-07-12 — Round 3: dock tucks on the Workshop, dive-in project transition, About in three columns
@@ -758,3 +762,20 @@ Each entry records the date, a summary of the change, and the files affected.
 - **Verified:** `tsc` clean, build green. Headless round-trip: scrolled to 02,
   opened it, came back via the link → caption reads 02; scrolled to 03, opened,
   browser Back → reads 03; a cold visit to `/projects` afterwards → back to 01.
+- **Committed by the user** as `84073b5` ("some changes betterments") and
+  `83143f2` ("rememberrrrrrr posters fix").
+
+### Open items (as of 2026-07-12)
+- `Download CV` still points at `/bhavith-parna-cv.pdf`, which 404s — no PDF in
+  `public/`. It's linked from About and Contact.
+- The GitHub PAT pasted in chat back on 2026-06-28 still needs revoking at
+  github.com/settings/tokens.
+- `ARCHITECTURE.md` is badly stale — it still describes the pre-scrapbook design
+  (brass rivets, sepia portrait, six scrollable sections, a filter bar, a top
+  nav bar) and now contradicts the site on nearly every point.
+- Dead code nothing imports: `components/ProjectCard.tsx`,
+  `components/sections/Projects.tsx`, `components/VideoIntro.tsx` (+
+  `public/intro.mp4`), `components/FaultyTerminal.tsx` (parked deliberately),
+  and `allCategories` in `lib/projects.ts`.
+- The 750ms open transition and the intro→Hero morph were only verified for
+  order/mechanics — headless capture can't judge their *feel*. Worth a live pass.
