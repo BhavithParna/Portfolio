@@ -1025,11 +1025,12 @@ body {
 }
 .ab-fade-o { animation: ab-enter-o 0.7s ease both; }
 
+.ab-head { margin-bottom: clamp(1rem, 2.4vh, 1.7rem); }
 .ab-title {
   font-family: 'Playfair Display', serif;
   font-style: italic;
   font-weight: 700;
-  font-size: clamp(2.4rem, 4.2vw, 3.6rem);
+  font-size: clamp(2.4rem, 3.6vw, 3.3rem);
   line-height: 0.9;
   color: var(--sb-ink);
   margin: 0;
@@ -1053,26 +1054,28 @@ body {
 
 .ab-grid {
   display: grid;
-  grid-template-columns: minmax(250px, 0.8fr) 1.6fr;
-  gap: clamp(2rem, 3.5vw, 3.5rem);
+  grid-template-columns: minmax(250px, 0.95fr) minmax(0, 1.3fr) minmax(230px, 0.85fr);
+  gap: clamp(1.6rem, 2.8vw, 3rem);
   align-items: start;
-  margin-top: clamp(0.9rem, 2vh, 1.4rem);
 }
 
-/* ── artifact pile (left) ── */
+/* ── masthead + artifact pile (left) ── */
 .ab-artifacts {
   position: relative;
-  height: 500px;
-  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 340px;
 }
+/* the tape has to live outside the figure's clip-path, so they share a wrapper */
+.ab-photo-wrap { position: relative; align-self: flex-start; margin-left: 4%; }
 .ab-photo {
-  position: absolute;
-  top: 0; left: 4%;
-  width: min(64%, 250px);
+  position: relative;
+  width: min(100%, 235px);
   margin: 0;
   background: var(--paper-lt);
   padding: 8px 8px 4px;
-  transform: rotate(-6deg);
+  transform: rotate(-5deg);
   /* drop-shadow (not box-shadow) so the shadow follows the torn clip shape */
   filter: drop-shadow(0 12px 16px rgba(43, 32, 20, 0.28));
   clip-path: polygon(0 0, 96% 0, 100% 8%, 100% 100%, 4% 100%, 0 92%);
@@ -1095,7 +1098,7 @@ body {
    clip-path can't cut it off */
 .ab-tape {
   position: absolute;
-  top: -10px; left: 30%;
+  top: -8px; left: 26%;
   width: 64px; height: 22px;
   background: rgba(47, 110, 102, 0.55);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -1103,21 +1106,24 @@ body {
   z-index: 3;
 }
 .ab-note {
-  top: 228px; left: 0;
-  max-width: 180px;
-  font-size: 1.15rem;
-  padding: 0.7rem 0.85rem 0.85rem;
-  z-index: 2;
+  position: relative;
+  align-self: flex-end;
+  margin: -0.5rem 2% 0 0;
+  max-width: 175px;
+  font-size: 1.12rem;
+  padding: 0.65rem 0.85rem 0.8rem;
+  transform: rotate(3deg);
+  z-index: 4;
 }
 .ab-stamp {
-  position: absolute;
-  top: 362px; left: 0;
-  margin-top: 0;
+  position: relative;
+  align-self: flex-start;
+  margin: 0.9rem 0 0 2%;
   background: rgba(246, 239, 221, 0.6);
   z-index: 2;
   transform: rotate(-8deg);
 }
-.ab-cuppos { position: absolute; bottom: 0; right: 2%; }
+.ab-cuppos { align-self: center; margin-top: 0.5rem; }
 
 /* live coffee counter: a mug that fills with beans (1 bean ≈ 100M cups) */
 .ab-cup { width: 158px; text-align: center; }
@@ -1156,7 +1162,7 @@ body {
   margin-top: 0.2rem;
 }
 
-/* ── bio + index (right) ── */
+/* ── bio (middle) ── */
 .ab-h {
   font-family: 'Playfair Display', serif;
   font-style: italic;
@@ -1174,7 +1180,6 @@ body {
   line-height: 1.45;
   color: var(--sb-ink);
   margin: 0 0 0.85rem;
-  max-width: 620px;
 }
 .ab-p {
   font-family: 'EB Garamond', Georgia, serif;
@@ -1182,17 +1187,17 @@ body {
   line-height: 1.55;
   color: #4A3B2C;
   margin-bottom: 0.8rem;
-  max-width: 620px;
 }
 
+/* ── index + actions (right) ── */
+.ab-index {
+  border-left: 1px solid rgba(51, 39, 28, 0.18);
+  padding-left: clamp(1.1rem, 1.8vw, 2rem);
+}
 .ab-facts {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.8rem;
-  border-top: 1px solid rgba(51, 39, 28, 0.18);
-  padding-top: 0.9rem;
-  margin-top: 0.9rem;
-  max-width: 640px;
+  grid-template-columns: 1fr;
+  gap: 1.3rem;
 }
 .ab-facts-h {
   font-family: 'Playfair Display', serif;
@@ -1220,9 +1225,31 @@ body {
 .ab-fact-value a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--paper-dk); }
 .ab-fact-value a:hover { color: var(--sb-terra); }
 
-.ab-actions { margin-top: 1rem; }
-.ab-actions .sb-btn { padding: 0.55rem 1.1rem; font-size: 0.66rem; }
+/* narrow column — the buttons stack rather than wrap raggedly */
+.ab-actions {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(51, 39, 28, 0.18);
+  padding-top: 1.2rem;
+  margin-top: 1.4rem;
+}
+.ab-actions .sb-btn { justify-content: center; padding: 0.55rem 1rem; font-size: 0.64rem; }
 
+@media (max-width: 1180px) {
+  /* index drops under the bio; two columns above it */
+  .ab-grid { grid-template-columns: minmax(240px, 0.9fr) 1.5fr; }
+  .ab-index {
+    grid-column: 1 / -1;
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid rgba(51, 39, 28, 0.18);
+    padding-top: 1.2rem;
+  }
+  .ab-facts { grid-template-columns: 1fr 1fr; gap: 1.8rem; }
+  .ab-actions { flex-direction: row; align-items: center; gap: 0.7rem; border-top: none; padding-top: 0; }
+  .ab-actions .sb-btn { padding: 0.55rem 1.1rem; font-size: 0.66rem; }
+}
 @media (max-width: 980px) {
   /* stacked = taller than a screen; scrolling is expected here */
   .ab-page { justify-content: flex-start; padding-bottom: 7rem; }
@@ -1230,11 +1257,20 @@ body {
 }
 @media (max-width: 560px) {
   .ab-facts { grid-template-columns: 1fr; gap: 1.2rem; }
-  .ab-stamp { left: 72px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ab-fade, .ab-fade-o { animation: none; }
   .ab-steam { animation: none; opacity: 0.35; }
+}
+
+/* Project detail — settles out of the Workshop's cream wash on arrival */
+@keyframes pj-enter {
+  from { opacity: 0; transform: translateY(18px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.pj-enter { animation: pj-enter 0.6s cubic-bezier(0.2, 0.8, 0.25, 1) 0.05s both; }
+@media (prefers-reduced-motion: reduce) {
+  .pj-enter { animation: none; }
 }
 
 /* ─── Retro dock navigation (.dock-*) ────────────────────────── */
@@ -1266,6 +1302,11 @@ body {
   border-bottom: none;
   border-radius: 8px 8px 0 0;
   background: rgba(246, 239, 221, 0.22);
+}
+/* tucked over cream paper (the Workshop) — ink tab, not a pale one */
+.dock-peek-ink {
+  border-color: rgba(51, 39, 28, 0.5);
+  background: rgba(51, 39, 28, 0.1);
 }
 
 .dock {

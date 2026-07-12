@@ -677,3 +677,65 @@ Each entry records the date, a summary of the change, and the files affected.
   user should hard-reload `/projects`. If it still errors, the fix to
   re-examine is in `ProjectPosters.tsx` (fresh-canvas effect).
 - **Still pending:** CV pdf 404; PAT revoke; stale `ARCHITECTURE.md`.
+
+### 2026-07-12 — Round 3: dock tucks on the Workshop, dive-in project transition, About in three columns
+- **What:**
+  1. **Dock no longer collides with the posters.** On `/projects` the posters
+     fly through the whole viewport, so the tray sat in their path and they
+     scrolled straight through it. `/projects` joins `HIDDEN_ROUTES` in
+     `DockNav`, so the dock tucks away there like it does on `/stare` and the
+     Hero — peek tab at the bottom edge, glides in when the cursor comes
+     near. The tab is pale cream, which is invisible on the Workshop's cream
+     paper, so tucked *light* routes (`LIGHT_ROUTES`) get an ink tab instead
+     (`.dock-peek-ink`).
+  2. **Dock tuck-back bug (found while verifying the above).** Once revealed,
+     the dock could stay out forever: the hot zone unmounts the instant it
+     reveals — right under the cursor — so `.dock` never receives a
+     `mouseenter`, and without one no `mouseleave` ever follows, so
+     `scheduleTuck` never ran. Tucking is now driven by a window-level
+     `mousemove` that checks the cursor against a 130px bottom band, which
+     doesn't depend on boundary events firing.
+  3. **Clicking a poster now dives into it.** `ProjectPosters` gained an
+     `onOpenStart` callback (fires on click) alongside `onSelect` (now fires
+     when the animation *finishes*, and is where the page navigates). The
+     clicked poster snaps to dead centre and rides toward the camera
+     (`Media.setOpen`, z 0 → 14 with the camera at 20) while every other
+     poster dissolves (new `uAlpha` uniform in the fragment shader, and
+     `transparent: true` on the program so it blends). The page fades its
+     masthead + caption (`.wk-chrome-out`) and washes a cream veil
+     (`.wk-veil`) over the dive; the project page it lands on is the same
+     cream and rises out of it (`.pj-enter`), so there's no cut. Whole thing
+     is 750ms.
+     - **Timing is elapsed-time, not frame-count.** The first cut advanced the
+       dive `1/45` per rendered frame, which is wrong on any display that
+       isn't 60Hz (half the duration at 120Hz) — and it's what made the
+       transition appear broken under headless capture, where swiftshader only
+       manages ~5fps: 45 frames took 9 seconds, so navigation never landed
+       inside the test window. Now `performance.now()` drives it, so the WebGL
+       dive stays locked to the page's CSS veil at any refresh rate.
+  4. **About rebuilt as three columns** (user: the old two-column version
+     "looks awful"). Left column is the masthead (`about ²⁰²⁶` + byline, moved
+     out of its own header row) plus the artifact pile — torn photo, sticky
+     note, rubber stamp, bean-mug coffee counter — now a flex column with
+     overlap via negative margins instead of absolute pins at fixed pixel
+     offsets, so it survives a narrower column. The photo and its washi tape
+     share an `.ab-photo-wrap` (the tape must stay outside the figure's
+     `clip-path`). Middle column is the bio. Right column is the
+     profile/contact index (stacked, not side-by-side) plus the CV / GitHub /
+     LinkedIn buttons (stacked full-width), set off by a hairline rule
+     (`.ab-index`).
+- **Files:** `components/DockNav.tsx`, `components/ProjectPosters.tsx`,
+  `app/projects/page.tsx`, `app/projects/[slug]/page.tsx`,
+  `components/sections/About.tsx`, `app/globals.css` (`.ab-*` reworked,
+  `.dock-peek-ink`, `.pj-enter`).
+- **Verified:** `tsc` clean, `next build` green (20 pages). Headless: dock
+  reports opacity 0 on `/projects` load with the ink peek tab present, 1 after
+  a bottom hover, back to 0 after the cursor leaves; clicking the centre poster
+  grows it while the neighbours fade and lands on
+  `/projects/bci-drone-controller` with no page errors; About measures
+  `scrollHeight - clientHeight === 0` (fits one screen, no scrolling) at both
+  1600×950 and 1366×768, three columns, right column fully populated.
+- **Headless caveat (again):** screenshots lag the compositor ~0.5–1s under
+  swiftshader, so mid-transition frames land late — the dive had to be captured
+  with the veil hidden via an injected style to see it at all. Order and
+  mechanics are verified; the *feel* of the 750ms still wants a live look.

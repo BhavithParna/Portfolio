@@ -26,7 +26,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
     <main>
       <section className="sb-page" style={{ minHeight: "100vh", display: "flex", alignItems: "center", padding: "6rem 0" }}>
         <span className="sb-deckle sb-deckle-bottom" />
-        <div className="sb-wrap" style={{ width: "100%", textAlign: "center" }}>
+        <div className="sb-wrap pj-enter" style={{ width: "100%", textAlign: "center" }}>
           <div style={{ marginBottom: "2rem" }}>
             <BackLink href="/projects" label="All Projects" />
           </div>

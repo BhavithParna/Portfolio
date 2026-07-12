@@ -70,6 +70,7 @@ precision highp float;
 uniform vec2 uImageSize;
 uniform vec2 uPlaneSize;
 uniform sampler2D tMap;
+uniform float uAlpha;
 
 varying vec2 vUv;
 
@@ -84,6 +85,7 @@ void main() {
   }
   vec2 uv = vUv * scale + (1.0 - scale) * 0.5;
   gl_FragColor = texture2D(tMap, uv);
+  gl_FragColor.a *= uAlpha;
 }
 `;
 
@@ -336,6 +338,7 @@ class Media {
     this.program = new Program(this.gl, {
       depthTest: false,
       depthWrite: false,
+      transparent: true,   // so uAlpha can fade the losers out on open
       fragment: fragmentShader,
       vertex: vertexShader,
       uniforms: {
@@ -346,6 +349,7 @@ class Media {
         rotationAxis: { value: [0, 1, 0] },
         distortionAxis: { value: [1, 1, 0] },
         uDistortion: { value: this.distortion },
+        uAlpha: { value: 1 },
       },
       cullFace: false,
     });
@@ -371,6 +375,15 @@ class Media {
     this.y = -this.heightTotal / 2 + (this.index + 0.5) * this.height;
   }
 
+  /* Opening: the chosen poster rides toward the camera (z 0 → 14, camera at
+     20) so it swells past the frame; everything else dissolves. */
+  setOpen(p: number) {
+    this.plane.position.z = p * 14;
+  }
+  setAlpha(a: number) {
+    this.program.uniforms.uAlpha.value = a;
+  }
+
   update(scroll: { current: number }) {
     this.plane.position.y = this.y - scroll.current - this.extra;
 
@@ -393,6 +406,9 @@ class Media {
 type PostersProps = {
   entries: Shelved[];
   onActiveChange?: (index: number) => void;
+  /** fired the moment a poster is clicked, so the page can dress the exit */
+  onOpenStart?: (index: number) => void;
+  /** fired once the open animation has finished — navigate here */
   onSelect?: (index: number) => void;
   planeWidth?: number;
   planeHeight?: number;
@@ -407,6 +423,7 @@ type PostersProps = {
 export default function ProjectPosters({
   entries,
   onActiveChange,
+  onOpenStart,
   onSelect,
   planeWidth = 400,
   planeHeight = 500,
@@ -419,8 +436,8 @@ export default function ProjectPosters({
 }: PostersProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef(-1);
-  const callbacksRef = useRef({ onActiveChange, onSelect });
-  callbacksRef.current = { onActiveChange, onSelect };
+  const callbacksRef = useRef({ onActiveChange, onOpenStart, onSelect });
+  callbacksRef.current = { onActiveChange, onOpenStart, onSelect };
 
   useEffect(() => {
     const container = containerRef.current;
@@ -488,13 +505,45 @@ export default function ProjectPosters({
     };
     build();
 
+    /* Opening a poster: it snaps to dead center, swells toward the camera and
+       the rest of the stack dissolves. The page navigates when it's done.
+       Driven by elapsed time, not frame count, so the dive stays locked to the
+       page's CSS veil whatever the refresh rate. */
+    const OPEN_MS = 750;
+    const open = { index: -1, t: 0, start: 0, done: false };
+    const isOpening = () => open.index >= 0;
+
+    const startOpen = (index: number) => {
+      const m = medias[index];
+      if (!m) return;
+      open.index = index;
+      open.t = 0;
+      open.start = performance.now();
+      // center it: plane.y = m.y - scroll.current - m.extra
+      scroll.target = m.y - m.extra;
+      callbacksRef.current.onOpenStart?.(index);
+    };
+
     const update = () => {
       raf = requestAnimationFrame(update);
-      scroll.current = lerp(scroll.current, scroll.target, scrollEase);
+      // snap harder to center once we're diving in
+      scroll.current = lerp(scroll.current, scroll.target, isOpening() ? 0.14 : scrollEase);
       medias.forEach(m => m.update(scroll));
 
-      // Which poster is closest to center? Drives the HTML caption.
-      if (medias.length) {
+      if (isOpening()) {
+        open.t = Math.min(1, (performance.now() - open.start) / OPEN_MS);
+        const dive = Math.pow(open.t, 1.8);              // accelerates into the paper
+        const fade = Math.min(1, open.t * 1.9);
+        medias.forEach((m, i) => {
+          if (i === open.index) m.setOpen(dive);
+          else m.setAlpha(1 - fade);
+        });
+        if (open.t >= 1 && !open.done) {
+          open.done = true;
+          callbacksRef.current.onSelect?.(open.index);
+        }
+      } else if (medias.length) {
+        // Which poster is closest to center? Drives the HTML caption.
         let best = 0;
         let bestDist = Infinity;
         medias.forEach((m, i) => {
@@ -518,6 +567,7 @@ export default function ProjectPosters({
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      if (isOpening()) return;
       scroll.target += e.deltaY * 0.01;
     };
     const pointOf = (e: MouseEvent | TouchEvent): [number, number] => {
@@ -525,6 +575,7 @@ export default function ProjectPosters({
       return [t.clientX, t.clientY];
     };
     const onDown = (e: MouseEvent | TouchEvent) => {
+      if (isOpening()) return;
       isDown = true;
       scrollPos = scroll.current;
       const [x, y] = pointOf(e);
@@ -532,7 +583,7 @@ export default function ProjectPosters({
       downAt = [x, y];
     };
     const onMove = (e: MouseEvent | TouchEvent) => {
-      if (!isDown) return;
+      if (!isDown || isOpening()) return;
       const [, y] = pointOf(e);
       scroll.target = scrollPos + (startY - y) * 0.05;
     };
@@ -540,8 +591,8 @@ export default function ProjectPosters({
       if (!isDown) return;
       isDown = false;
       const [x, y] = pointOf(e);
-      if (downAt && Math.hypot(x - downAt[0], y - downAt[1]) < 8 && activeRef.current >= 0) {
-        callbacksRef.current.onSelect?.(activeRef.current);
+      if (downAt && Math.hypot(x - downAt[0], y - downAt[1]) < 8 && activeRef.current >= 0 && !isOpening()) {
+        startOpen(activeRef.current);
       }
       downAt = null;
     };

@@ -8,6 +8,10 @@ import ProjectPosters from "@/components/ProjectPosters";
 
 export default function ProjectsPage() {
   const [active, setActive] = useState(0);
+  // Set the moment a poster is clicked: the chrome fades and a cream veil
+  // washes in behind the diving poster, so the hand-off to the (also cream)
+  // project page has nothing to cut against.
+  const [opening, setOpening] = useState(false);
   const router = useRouter();
   // Stable identity — ProjectPosters rebuilds its whole scene when this changes.
   const entries = useMemo(() => shelveProjects(), []);
@@ -31,7 +35,7 @@ export default function ProjectsPage() {
         />
 
         {/* Masthead */}
-        <div style={{ position: "absolute", top: "clamp(1.5rem, 4vh, 3.5rem)", left: "clamp(1.5rem, 5vw, 5.5rem)", zIndex: 5, pointerEvents: "none" }}>
+        <div className={opening ? "wk-chrome wk-chrome-out" : "wk-chrome"} style={{ position: "absolute", top: "clamp(1.5rem, 4vh, 3.5rem)", left: "clamp(1.5rem, 5vw, 5.5rem)", zIndex: 5, pointerEvents: "none" }}>
           <div style={{ pointerEvents: "auto" }}>
             <BackLink href="/" label="Home" />
           </div>
@@ -47,13 +51,18 @@ export default function ProjectsPage() {
           <ProjectPosters
             entries={entries}
             onActiveChange={setActive}
+            onOpenStart={() => setOpening(true)}
             onSelect={i => router.push(`/projects/${entries[i].project.slug}`)}
           />
         </div>
 
+        {/* Cream wash that swallows the diving poster */}
+        <div className={opening ? "wk-veil wk-veil-in" : "wk-veil"} aria-hidden="true" />
+
         {/* Caption for the poster at center stage */}
         <div
           key={current?.project.slug}
+          className={opening ? "wk-caption wk-chrome-out" : "wk-caption"}
           style={{
             position: "absolute",
             right: "clamp(1.5rem, 5vw, 5.5rem)",
@@ -62,7 +71,6 @@ export default function ProjectsPage() {
             maxWidth: 300,
             textAlign: "right",
             pointerEvents: "none",
-            animation: "sbCaptionIn 0.45s ease both",
           }}
         >
           <p style={{ fontFamily: "'EB Garamond', serif", fontStyle: "italic", fontSize: "2rem", color: "var(--sb-terra)", lineHeight: 1 }}>
@@ -86,6 +94,33 @@ export default function ProjectsPage() {
           @keyframes sbCaptionIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
+          }
+          .wk-caption { animation: sbCaptionIn 0.45s ease both; }
+
+          /* opening a poster: masthead + caption step back, cream washes in */
+          @keyframes wkChromeOut {
+            to { opacity: 0; transform: translateY(6px); }
+          }
+          .wk-chrome-out { animation: wkChromeOut 0.3s ease forwards; }
+
+          .wk-veil {
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            background: var(--paper);
+            opacity: 0;
+            pointer-events: none;
+          }
+          .wk-veil-in {
+            animation: wkVeilIn 0.42s ease-in 0.33s forwards;
+          }
+          @keyframes wkVeilIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .wk-caption, .wk-chrome-out { animation: none; }
+            .wk-veil-in { animation: wkVeilIn 0.2s linear 0.4s forwards; }
           }
         `}</style>
       </section>

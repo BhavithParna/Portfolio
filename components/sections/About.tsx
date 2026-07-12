@@ -4,9 +4,10 @@ import CoffeeCounter from "@/components/CoffeeCounter";
 
 /*
   About — "about ²⁰²⁶" editorial layout (imported from Claude Design,
-  About Section.dc.html) re-set on the site's scrapbook paper: left column
-  is a pile of artifacts (torn photo, sticky note, rubber stamp, spinning
-  coffee-ring counter), right column is the bio + profile/contact index.
+  About Section.dc.html) re-set on the site's scrapbook paper. Three columns
+  so the whole thing fits one screen: masthead + artifact pile (torn photo,
+  sticky note, rubber stamp, coffee counter) on the left, the bio in the
+  middle, the profile/contact index and the CV buttons on the right.
 */
 
 const PROFILE: { label: string; value: React.ReactNode }[] = [
@@ -32,23 +33,25 @@ export default function About() {
       <span className="sb-deckle sb-deckle-bottom" />
 
       <div className="sb-wrap">
-        <header className="ab-fade" style={d()}>
-          <h1 className="ab-title">about <sup>2026</sup></h1>
-          <p className="ab-mono ab-byline">[ bhavith parna ]</p>
-        </header>
-
         <div className="ab-grid">
 
-          {/* ── artifact pile ── */}
+          {/* ── masthead + artifact pile ── */}
           <div className="ab-artifacts">
-            <figure className="ab-photo ab-fade-o" style={d()}>
-              <img
-                src="/images/about-photo.jpg"
-                alt="Grainy night photo of a Darth Vader figure"
-              />
-              <figcaption className="ab-photo-cap">exhibit A — after dark</figcaption>
-            </figure>
-            <span className="ab-tape ab-fade-o" style={d()} aria-hidden="true" />
+            <header className="ab-head ab-fade" style={d()}>
+              <h1 className="ab-title">about <sup>2026</sup></h1>
+              <p className="ab-mono ab-byline">[ bhavith parna ]</p>
+            </header>
+
+            <div className="ab-photo-wrap">
+              <figure className="ab-photo ab-fade-o" style={d()}>
+                <img
+                  src="/images/about-photo.jpg"
+                  alt="Grainy night photo of a Darth Vader figure"
+                />
+                <figcaption className="ab-photo-cap">exhibit A — after dark</figcaption>
+              </figure>
+              <span className="ab-tape ab-fade-o" style={d()} aria-hidden="true" />
+            </div>
 
             <span className="sb-note ab-note ab-fade-o" style={d()}>
               ↳ usually mid&#8209;build,<br />on coffee #3 ☕
@@ -63,8 +66,8 @@ export default function About() {
             </div>
           </div>
 
-          {/* ── bio + index ── */}
-          <div>
+          {/* ── bio ── */}
+          <div className="ab-bio">
             <h2 className="ab-h ab-fade" style={d()}>about me</h2>
             <p className="ab-mono ab-sub ab-fade" style={d()}>hey, I&apos;m Bhavith :)</p>
 
@@ -88,7 +91,10 @@ export default function About() {
               court, halfway through a book, curating a playlist nobody asked for, or on my third
               coffee — fourth if the EEG cap decided to fight me that day.
             </p>
+          </div>
 
+          {/* ── index + actions ── */}
+          <div className="ab-index">
             <div className="ab-facts ab-fade" style={d()}>
               <div>
                 <h3 className="ab-facts-h">profile</h3>

@@ -24,10 +24,14 @@ import { setScene, useScene, type Scene } from "@/lib/sceneStore";
   On immersive views (HIDDEN_ROUTES, and the Hero landing scene) the dock
   stays tucked away — a small paper tab peeks at the bottom edge; bringing
   the cursor near it makes the dock glide in from a random direction. It
-  tucks back away when the mouse wanders off.
+  tucks back away when the mouse wanders off. The Workshop is in there
+  because its posters fly through the full viewport and would otherwise
+  scroll straight under the tray.
 */
 
-const HIDDEN_ROUTES = new Set(["/stare"]);
+const HIDDEN_ROUTES = new Set(["/stare", "/projects"]);
+/* …of those, the ones on cream paper need a dark tab instead of a pale one */
+const LIGHT_ROUTES = new Set(["/projects"]);
 
 type Item = {
   id: string;
@@ -93,6 +97,27 @@ export default function DockNav() {
     if (hideTimer.current) clearTimeout(hideTimer.current);
   };
 
+  /*
+    The dock's own mouseleave can't be trusted to put it away: the hot zone
+    unmounts the instant it reveals, right under the cursor, so the dock may
+    never receive a mouseenter — and without one, no mouseleave ever follows.
+    Watch the cursor against the bottom band instead; leave the band, tuck.
+  */
+  useEffect(() => {
+    if (!tucked || !revealed) return;
+    const BAND = 130;
+    const onMove = (e: MouseEvent) => {
+      if (e.clientY > window.innerHeight - BAND) cancelTuck();
+      else scheduleTuck();
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      if (hideTimer.current) clearTimeout(hideTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tucked, revealed]);
+
   const onScene = (s: Scene) => {
     setScene(s);
     if (pathname !== "/") router.push("/");
@@ -111,7 +136,7 @@ export default function DockNav() {
           onTouchStart={reveal}
           aria-hidden="true"
         >
-          <span className="dock-peek" />
+          <span className={LIGHT_ROUTES.has(pathname) ? "dock-peek dock-peek-ink" : "dock-peek"} />
         </div>
       )}
 

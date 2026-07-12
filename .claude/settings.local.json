@@ -6,7 +6,9 @@
       "mcp__claude_ai_Motion__create_video",
       "Skill(run)",
       "Bash(git config *)",
-      "Bash(echo \"--- exit $?\")"
+      "Bash(echo \"--- exit $?\")",
+      "Bash(git -C /home/bhavith/Documents/port/Portfolio log --oneline -10)",
+      "Bash(git -C /home/bhavith/Documents/port/Portfolio status)"
     ]
   }
 }
