@@ -765,7 +765,76 @@ Each entry records the date, a summary of the change, and the files affected.
 - **Committed by the user** as `84073b5` ("some changes betterments") and
   `83143f2` ("rememberrrrrrr posters fix").
 
-### Open items (as of 2026-07-12)
+### 2026-07-18/19 — About rebuilt as a full-width print-poster with a LiquidEther teal band
+- **What (source):** driven from a fresh design handoff the user dropped in
+  `~/Downloads/Portfoliobout.zip` (`design_handoff_about_section/` — an
+  `About Section.dc.html` prototype + README, "retro print-poster" concept). The
+  previous three-column scrapbook About (`.ab-*`, `<CoffeeCounter/>`) was
+  **fully replaced**, not extended.
+- **New About poster** (`components/sections/About.tsx`, all-new markup under an
+  `.abp-*` namespace):
+  - Mono **meta strips** (`FORMAT — HTML/CSS · 1180 × 1520 PX · RATIO 4:5`,
+    `EST. 2026`), a giant **Anton `ABOUT`** headline that bleeds into a teal
+    feature band, then a two-column body (Playfair italic lead + Inter copy) and
+    a `THE STANDINGS` rail with a live coffee counter and CV/GitHub/LinkedIn
+    buttons. Bio copy is the exact handoff text.
+  - **Cassette player** (`Cassette` sub-component) — a Lumineers homage
+    (*Sleep on the Floor* / *Dead Sea*), spinning reels, progress + timecode,
+    play/pause. Audio is a **synthesized Web-Audio vinyl-crackle** (+ blips), no
+    licensed tracks, per the handoff. `StampButton` = the rotated
+    "OPEN TO OPPORTUNITIES" stamp with a low Web-Audio "thud".
+  - `CoffeeStat` keeps the honest UTC-midnight live count (from the old
+    CoffeeCounter) but renders it as the poster's Anton number.
+- **Iterations this session (in order):**
+  1. **Full-width:** dropped the floating 1180px card (max-width / shadow /
+     border / band padding) so the poster runs edge-to-edge.
+  2. **Photo:** Polaroid now uses `~/Downloads/WhatsApp Image 2026-07-18 …jpeg`
+     (a grainy night/sunglasses shot), copied over `public/images/about-photo.jpg`
+     — replaces the old Darth-Vader placeholder (which had a stray mute glyph).
+  3. **Quote:** removed the "SOME DAYS THE ONLY DEADLINE…" blurb; the top-right
+     meta text is now a SAW line — *"LIVE OR DIE. MAKE YOUR CHOICE." — JIGSAW · SAW*.
+  4. **Badge:** briefly added a third `№ 04 · '26` tag to the
+     `ABOUT · BHAVITH PARNA / CONCEPT PORTFOLIO SERIES` badge, then **removed the
+     whole badge** on request; the quote now sits alone, right-aligned. Dead
+     `.abp-badge*` CSS deleted.
+  5. **Animated backdrop of the teal band:** first wired the pre-existing
+     `components/FaultyTerminal.tsx` (ogl), then, on request, **swapped it for
+     `LiquidEther`** (three.js fluid sim). FaultyTerminal is now unused again.
+- **LiquidEther** (`components/LiquidEther.tsx`, NEW) — vendored verbatim from
+  React Bits, adapted to TSX only (`"use client"`, `// @ts-nocheck` +
+  `eslint-disable` for the dynamic WebGL classes; container style lives in
+  globals as `.liquid-ether-container`). Mounted client-only via
+  `next/dynamic(… , { ssr:false })` inside the `.abp-terminal` layer (z-index 0,
+  below the polaroid/cassette/stamp). Final props: `colors` = the poster accents
+  `["#c1502e","#d95f2b","#e7d8b6"]`, `mouseForce 20`, `cursorSize 40`,
+  `resolution 0.5`, `isViscous viscous={50} iterationsViscous={32}`,
+  `iterationsPoisson 32`, `isBounce false`, `autoDemo autoSpeed 0.5
+  autoIntensity 2.2`. Reacts to the cursor over the band and auto-drifts when idle.
+- **Teal band deepened:** `--teal` `#2f6f66 → #164039` so the warm fluid is more
+  visible against it.
+- **Deps / fonts:** added **`three` ^0.185.1** (`ogl` was already present).
+  Google-Fonts `@import` gained **Anton**, **Special Elite**, plus **JetBrains
+  Mono 700** and **Inter 700/800** for the poster.
+- **Removed:** `components/CoffeeCounter.tsx` (only the old About used it); its
+  `.ab-cup*` CSS went with the old About block.
+- **Files:** `components/sections/About.tsx` (rewrite), `components/LiquidEther.tsx`
+  (new), `app/globals.css` (fonts import; `.ab-*` About block replaced by `.abp-*`;
+  `--teal`; `.liquid-ether-container`), `package.json` / `package-lock.json`
+  (three), `public/images/about-photo.jpg` (replaced), `components/CoffeeCounter.tsx`
+  (deleted). `components/FaultyTerminal.tsx` touched (Math.random purity fix) but
+  now unused.
+- **Verified:** lint clean on the touched files (only the pre-existing `<img>`
+  advisory, matching convention); dev server compiles green; headless captures
+  confirmed the poster top/bottom, the cassette, the removed badge, and the
+  LiquidEther flow (swept the cursor over the band to make it bloom). The
+  `THREE.Clock deprecated` console line is a harmless notice from the vendored
+  component.
+- **Where we left off:** last open question to the user was whether to push
+  `mouseForce`/`autoIntensity` so the warm fluid reads more vividly at idle —
+  awaiting their call. Dev server was left running on `localhost:3000`. Nothing
+  committed this session (working tree has the above changes).
+
+### Open items (as of 2026-07-19)
 - `Download CV` still points at `/bhavith-parna-cv.pdf`, which 404s — no PDF in
   `public/`. It's linked from About and Contact.
 - The GitHub PAT pasted in chat back on 2026-06-28 still needs revoking at
@@ -775,7 +844,10 @@ Each entry records the date, a summary of the change, and the files affected.
   nav bar) and now contradicts the site on nearly every point.
 - Dead code nothing imports: `components/ProjectCard.tsx`,
   `components/sections/Projects.tsx`, `components/VideoIntro.tsx` (+
-  `public/intro.mp4`), `components/FaultyTerminal.tsx` (parked deliberately),
-  and `allCategories` in `lib/projects.ts`.
+  `public/intro.mp4`), `components/FaultyTerminal.tsx` (superseded by LiquidEther
+  but left in place to switch back), and `allCategories` in `lib/projects.ts`.
+- LiquidEther is a full GPU fluid sim (float FBOs, per-frame Poisson/viscous
+  passes) running behind the About band — fine on desktop, worth a look on
+  low-end/mobile if perf ever matters. It pauses off-screen via IntersectionObserver.
 - The 750ms open transition and the intro→Hero morph were only verified for
   order/mechanics — headless capture can't judge their *feel*. Worth a live pass.
