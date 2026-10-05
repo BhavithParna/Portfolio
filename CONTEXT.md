@@ -1002,3 +1002,16 @@ Each entry records the date, a summary of the change, and the files affected.
   headless frames across the timeline show seam → letterbox → words → bloom →
   name + echoes → slide → Hero with no console errors. Headless screenshots
   lag ~0.5s so exact beats want a live look.
+
+## Contact revamp — "Air mail at dusk" (Oct 2026)
+- `components/sections/Contact.tsx` + `components/sections/contact.css` (own file). Left: headline, lead, detail rows styled like the About dawn link rows (smaller), CV button. Right: 3D envelope (tilt springs, flap folds back, letter rises, "send" builds a mailto and flies off, "write another" resets). Paper-plane flight path was removed on request.
+- Old `.sb-postcard*` / `.sb-postage*` blocks were removed from `app/globals.css`.
+- Mobile (≤980): single column with the envelope first; row values drop under the label instead of hiding; envelope only nudges 44px and the letter rises 58% (narrow detected via `useSyncExternalStore` + matchMedia); open stage gets 7rem top margin for headroom.
+
+## Library polish (Oct 2026) — deliberately non-drastic
+- `.lib-page` / `.lib-shelf` / `.lib-gloss` in `app/globals.css` (before the Workshop block): soft ember/teal radial glows, cream gradient, backlit shelf band, wood grain, per-book drop shadow, spine gloss.
+- New placeholder projects in `lib/projects.ts`: `zerorisk`, `emergency-dashboard` (summaries/bullets are placeholders — confirm with Bhavith). Two matching `bookMeta` entries in `Library.tsx`.
+
+## Dusk intro + About, mobile pass (Oct 2026)
+- Intro word list = real fields (Neurotech, AI/ML, Website building…); `.dk-slit/.dk-role` centre via CSS `translate` (framer owns transform); `.dk-sky` inset:0 so only one moon during the crossfade.
+- About constellation ≤600px: labels wrap to 84px columns so neighbours don't collide; skybox 48vh.

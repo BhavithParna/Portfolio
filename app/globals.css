@@ -687,65 +687,7 @@ body {
   box-shadow: inset 0 0 0 1px rgba(188,90,60,0.25);
 }
 
-/* ── Contact postcard ── */
-.sb-postcard {
-  position: relative;
-  background: var(--paper-lt);
-  border: 1px solid var(--paper-dk);
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 0;
-  box-shadow: 0 14px 34px rgba(60,40,20,0.2);
-  transform: rotate(-0.6deg);
-  margin-top: 2.5rem;
-}
-.sb-postcard-left { padding: 2.5rem 2.5rem; }
-.sb-postcard-right {
-  padding: 2.5rem 2.5rem;
-  border-left: 2px dashed var(--paper-dk);
-  position: relative;
-}
-.sb-postcard-msg {
-  font-family: 'EB Garamond', Georgia, serif;
-  font-size: 1.12rem;
-  line-height: 1.7;
-  color: #4A3B2C;
-  margin-bottom: 1.6rem;
-}
-.sb-stamp-box {
-  position: absolute; top: 1.6rem; right: 1.6rem;
-  width: 70px; height: 84px;
-  border: 2px dashed var(--sb-ink-soft);
-  border-radius: 3px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Caveat', cursive;
-  font-size: 1.5rem;
-  color: var(--sb-terra);
-  transform: rotate(4deg);
-  opacity: 0.85;
-  text-align: center;
-}
-.sb-sign {
-  font-family: 'Pacifico', cursive;
-  font-size: 1.7rem;
-  color: var(--sb-ink);
-  transform: rotate(-3deg);
-  display: inline-block;
-}
-.sb-foot {
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 1rem;
-  margin-top: 3rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--sb-ink-soft);
-}
-
 @media (max-width: 860px) {
-  .sb-postcard { grid-template-columns: 1fr; transform: none; }
-  .sb-postcard-right { border-left: none; border-top: 2px dashed var(--paper-dk); }
   .sb-wrap { padding: 0 1.5rem; }
 }
 
@@ -782,30 +724,6 @@ body {
   background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.12) 50%);
 }
 
-/* Postage stamp (perforated) */
-.sb-postage {
-  position: absolute; top: 1.4rem; right: 1.4rem;
-  width: 78px; height: 92px; padding: 7px;
-  background:
-    radial-gradient(circle 4px at 50% 0, #0000 96%, var(--paper-lt)) 0 0 / 13px 13px repeat-x,
-    radial-gradient(circle 4px at 50% 100%, #0000 96%, var(--paper-lt)) 0 100% / 13px 13px repeat-x,
-    radial-gradient(circle 4px at 0 50%, #0000 96%, var(--paper-lt)) 0 0 / 13px 13px repeat-y,
-    radial-gradient(circle 4px at 100% 50%, #0000 96%, var(--paper-lt)) 100% 0 / 13px 13px repeat-y,
-    var(--paper-lt);
-  filter: drop-shadow(0 3px 5px rgba(60,40,20,0.22));
-  transform: rotate(4deg);
-}
-.sb-postage-inner {
-  width: 100%; height: 100%;
-  border: 1px solid var(--sb-terra);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; text-align: center;
-  font-family: 'Pacifico', cursive; color: var(--sb-terra);
-  line-height: 1.1;
-}
-.sb-postage-inner b { font-size: 1rem; font-weight: 400; }
-.sb-postage-inner span { font-family: 'Inter', sans-serif; font-size: 0.42rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sb-ink-soft); }
-
 /* ═══ Library on cream (warm wooden shelf) ═══════════════════════ */
 
 .sb-shelf-head {
@@ -837,6 +755,31 @@ body {
   display: flex; align-items: flex-end; gap: 8px;
   box-shadow: inset 0 14px 26px rgba(0,0,0,0.28);
 }
+
+/* Library polish — a discreet warm light across the page, a backlit shelf,
+   and a gloss on every spine. Nothing structural. */
+.lib-page {
+  background:
+    radial-gradient(90% 60% at 85% 0%, rgba(232,118,63,0.14) 0%, transparent 60%),
+    radial-gradient(70% 50% at 0% 100%, rgba(60,114,104,0.12) 0%, transparent 60%),
+    linear-gradient(160deg, #F2EAD8 0%, var(--paper) 45%, #E6DAC0 100%);
+}
+.lib-shelf {
+  position: relative;
+  background:
+    linear-gradient(to bottom, rgba(255,214,160,0.10), transparent 38%),
+    radial-gradient(120% 90% at 50% 100%, rgba(255,190,120,0.16) 0%, transparent 60%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.035) 0 2px, transparent 2px 9px),
+    linear-gradient(to bottom, #7A5836 0%, #654526 60%, #523818 100%);
+  box-shadow: inset 0 14px 26px rgba(0,0,0,0.3), inset 0 -40px 60px -30px rgba(0,0,0,0.35);
+}
+.lib-shelf > * { filter: drop-shadow(0 18px 14px rgba(20,10,0,0.28)); }
+.lib-gloss {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 22%, rgba(255,255,255,0.13) 34%, rgba(255,255,255,0.04) 48%, rgba(0,0,0,0) 62%, rgba(0,0,0,0.08) 100%);
+}
+.lib-shelf::-webkit-scrollbar { height: 6px; }
+.lib-shelf::-webkit-scrollbar-thumb { background: rgba(60,40,20,0.35); border-radius: 3px; }
 
 /* ═══ Projects page (The Workshop) on cream ═════════════════════ */
 

@@ -377,7 +377,11 @@
   .ad-clouds-dawn { height: 64vh; }
   .ad-exhibit-sticky { padding: 0 1.25rem; }
   .ad-stamp { right: -10px; }
-  .ad-star-label b { font-size: 0.8rem; }
+  /* labels wrap to two short lines so neighbours stop colliding on a 390px sky */
+  .ad-star-label { white-space: normal; width: 84px; top: calc(100% + 8px); line-height: 1.1; }
+  .ad-star-label b { font-size: 0.78rem; }
+  .ad-star:first-child .ad-star-label, .ad-star:last-of-type .ad-star-label { width: 110px; }
+  .ad-skybox { height: 48vh; margin-top: 12vh; }
   .ad-scrollcue { bottom: 7.5rem; }
   .ad-link { grid-template-columns: 1fr auto; }
   .ad-link-meta { display: none; }

@@ -58,6 +58,20 @@ const bookMeta = [
     mb: 5,
   },
   {
+    // Ink blue — the web builds
+    w: 112, h: 296,
+    gradient: "linear-gradient(to right, #15243A 0%, #15243A 6%, #213654 16%, #2E4A70 30%, #3A5A84 50%, #2E4A70 70%, #213654 84%, #15243A 94%, #15243A 100%)",
+    foil: "#E8763F",
+    mb: 3,
+  },
+  {
+    // Burgundy
+    w: 118, h: 304,
+    gradient: "linear-gradient(to right, #3A0F16 0%, #3A0F16 6%, #561A24 16%, #742634 30%, #8A3242 50%, #742634 70%, #561A24 84%, #3A0F16 94%, #3A0F16 100%)",
+    foil: "#F2E4C0",
+    mb: 1,
+  },
+  {
     // Charcoal — the classified one
     w: 122, h: 310,
     gradient: "linear-gradient(to right, #14100C 0%, #14100C 6%, #241C14 16%, #362A1E 30%, #423424 50%, #362A1E 70%, #241C14 84%, #14100C 94%, #14100C 100%)",
@@ -266,6 +280,9 @@ function SpineBook({
         background: "linear-gradient(to right, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.04) 100%)",
         pointerEvents: "none", zIndex: 3,
       }} />
+
+      {/* Spine gloss — the cloth catches the room light along its curve */}
+      <div className="lib-gloss" aria-hidden="true" />
 
       {/* Content */}
       <div style={{ position: "relative", zIndex: 4, display: "flex", flexDirection: "column", alignItems: "center", height: "100%", width: "100%", padding: "12px 0" }}>
@@ -586,7 +603,7 @@ export default function Library() {
   }, []);
 
   return (
-    <section id="library" ref={sectionRef} className="sb-page" style={{ padding: "6.5rem 0 7rem" }}>
+    <section id="library" ref={sectionRef} className="sb-page lib-page" style={{ padding: "6.5rem 0 7rem" }}>
       <span className="sb-deckle sb-deckle-top" />
       <span className="sb-deckle sb-deckle-bottom" />
       <div className="sb-wrap">
@@ -605,7 +622,7 @@ export default function Library() {
         </div>
 
         {/* ── Projects shelf ── */}
-        <div className="reveal sb-shelf" style={{ overflowX: "auto" }}>
+        <div className="reveal sb-shelf lib-shelf" style={{ overflowX: "auto" }}>
           {shelveProjects().map(({ project: p, volume, binding }) => {
             const m = bookMeta[binding % bookMeta.length];
             // A companion volume is bound to match its parent — same cloth and
@@ -640,7 +657,7 @@ export default function Library() {
 
         {/* ── Life shelf ── */}
         <div className="reveal" ref={lifeWrapRef} style={{ position: "relative" }}>
-          <div className="sb-shelf">
+          <div className="sb-shelf lib-shelf">
             {lifeMeta.map(b => (
               <SpineBook
                 key={b.title}
