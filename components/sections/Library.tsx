@@ -603,12 +603,12 @@ export default function Library() {
   }, []);
 
   return (
-    <section id="library" ref={sectionRef} className="sb-page lib-page" style={{ padding: "6.5rem 0 7rem" }}>
+    <section id="library" ref={sectionRef} className="sb-page lib-page" style={{ padding: "2.5rem 0 5rem" }}>
       <span className="sb-deckle sb-deckle-top" />
       <span className="sb-deckle sb-deckle-bottom" />
       <div className="sb-wrap">
 
-        <div className="reveal" style={{ marginBottom: "3.5rem" }}>
+        <div className="reveal" style={{ marginBottom: "1.75rem" }}>
           <p className="sb-eyebrow">The Library</p>
           <p style={{ fontFamily: "'EB Garamond', serif", fontStyle: "italic", fontSize: "1.4rem", color: "var(--sb-ink-soft)", maxWidth: 480 }}>
             Browse the shelves — every book opens a chapter.
@@ -648,7 +648,7 @@ export default function Library() {
         </div>
         <ShelfPlank />
 
-        <div style={{ height: "4.5rem" }} />
+        <div style={{ height: "2.5rem" }} />
 
         {/* ── Life shelf header ── */}
         <div className="reveal sb-shelf-head">
