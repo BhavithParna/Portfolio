@@ -851,3 +851,154 @@ Each entry records the date, a summary of the change, and the files affected.
   low-end/mobile if perf ever matters. It pauses off-screen via IntersectionObserver.
 - The 750ms open transition and the intro→Hero morph were only verified for
   order/mechanics — headless capture can't judge their *feel*. Worth a live pass.
+
+### 2026-10-05 — Intro v3: "the recording" (SignalIntro replaces DoodleIntro)
+- **What:** The landing intro is rebuilt from a new concept. `components/SignalIntro.tsx`
+  (new) is a live multichannel recording drawn on one `<canvas>` (one rAF, polylines
+  only): a single flat trace draws across the dark → it starts carrying a rhythm →
+  channels fan out from it into a full montage across the band where the name will sit
+  (per-channel gain, blink artifacts scrolling with the chart, cursor proximity bumps
+  nearby channels) → surge, then a hush → a decode front sweeps the band and, inside
+  the name's footprint, the noise is replaced scanline by scanline by the glyph raster
+  of BHAVITH (ink = zigzag texture, no ink = flat line) → lock: the raster tightens and
+  the real Playfair wordmark fades in on the same pixels → the dusk sky comes up behind
+  (overlay background → transparent) while the name slides onto the Hero's "BHAVITH".
+  ~7.85s, skippable (button / Esc), reduced-motion gets a still name card.
+  - The raster is sampled from an offscreen canvas drawn with the same face, size,
+    tracking and CSS baseline (`fontBoundingBoxAscent/Descent`) as the DOM wordmark,
+    so the lock lands exactly; the slide target is measured off the live Hero DOM
+    (centre-to-centre), as before.
+  - **Hero contract changed:** `REVEAL_EVENT` now carries `{ morph, delay }`. On a
+    morph the Hero holds its BHAVITH row hidden (`.hs-held`, delay = the slide) and
+    shows it the instant the overlay's copy lets go, then staggers in echo / Parna /
+    role / credit after it. Skip / reduced motion send `morph:false` (full entrance).
+  - Phase cues (lock, exit, unmount) come off the rAF clock, so a hidden tab pauses
+    the intro instead of desyncing timers from drawing.
+- **Removed:** `components/DoodleIntro.tsx`, `components/VideoIntro.tsx`,
+  `public/intro.mp4`, the `.di-*`, `.vi-*` and `.vi-tap` CSS blocks, and the Fraunces
+  family from the Google Fonts import (only the old intro used it).
+- **Files:** `components/SignalIntro.tsx` (new), `components/sections/Hero.tsx`,
+  `app/layout.tsx`, `app/globals.css` (`.si-*`, `.hs-held`/`hs-hold`), `CONTEXT.md`.
+- **Verified:** lint clean on touched files; `tsc` clean apart from the pre-existing
+  `LiquidEther.tsx` errors (they also fail `next build`: `three` ships no types and
+  the file's `// @ts-nocheck` sits *after* `"use client"`, so TypeScript ignores it;
+  not touched here). Playwright frames at 1600×950
+  and 390×844 confirm every beat; the landed intro name matches the Hero wordmark's
+  width and centre exactly (inline vs inline-block boxes differ only in reported height).
+- **Note:** a parallel session is rebuilding About (`about.css`); edits to globals.css
+  from here were targeted after a wholesale write clobbered its appended block once.
+
+### 2026-10-05 — About rebuilt as "After Dark" (scroll-bound night sky)
+- **What:** The print-poster About (`.abp-*`, LiquidEther band, cassette card,
+  "THE STANDINGS") was fully replaced. The new About is the *night that
+  follows the Hero's dusk photo*: one continuous sky whose colour is bound to
+  scroll (dusk navy → deep night → the first orange of dawn), a moon that
+  crosses the sky as the scroll-progress indicator (and drops below the
+  horizon before the links), and the Hero's own clouds (`hero-bg.jpg`) carried
+  in as parallax at both ends so Hero and About read as one place at two
+  hours. Stations, top to bottom:
+  1. **Opening** — `AFTER / dark` wordmark in the Hero's Playfair + echo-outline
+     style; letters rise out of a clip; clouds parallax; scroll cue.
+  2. **Exhibit A** — pinned (260vh) Polaroid that rotates/scales with scroll +
+     the lead paragraph lit *word by word* by scroll; facts strip
+     (`[ status ] Year 4 of 4` …) beneath it replaces "THE STANDINGS".
+  3. **Constellation · off the clock** — pinned sky where Lego, Basketball,
+     Books, Coffee, Horror films, Playlists, The Lumineers are stars; scrolling
+     draws the polyline between them (framer `pathLength`) and each star +
+     Caveat note lights when the line reaches it. Deliberately *no projects*.
+  4. **Night fuel** — live coffee counter (honest UTC-midnight estimate, digits
+     roll) + the Lumineers cassette (kept from the old About, synthesized
+     crackle, no licensed audio) + a mono marquee strip.
+  5. **Dawn** — Download CV / GitHub / LinkedIn as giant hover-fill rows; the
+     clouds return lit orange; "see you after dark — B." sign-off.
+- **Removed on user request mid-build:** a patient-monitor "Vitals" ECG strip
+  and a pinned horizontal "Field notes" rail (it surfaced project content; the
+  user doesn't want projects on About). Constellation + facts strip replaced them.
+- **Mechanics:** everything scrolls inside the stage's `.scene` box, so every
+  `useScroll` is bound to it via a `ScrollBox` context (root finds
+  `closest('.scene')` in a layout effect and renders the page once found).
+  Sky is a sticky 100vh layer with `margin-bottom:-100vh`. Reduced motion:
+  static moon, no letter rise/twinkle/marquee, words fully lit.
+- **Gotcha found:** a framer `useTransform(value, [0, 0.7], [0, 1])` whose
+  output starts at exactly 0 never updated the element's inline `opacity`
+  (transform on the same element updated fine). The function form
+  `useTransform(v, p => …)` works — used for the dawn clouds' opacity.
+- **Styles live in `components/sections/about.css`** (imported by About.tsx),
+  not globals.css — a parallel session's wholesale rewrite of globals.css
+  wiped the first appended `.ad-*` block, so About owns its own file now.
+  The old `.abp-*` block and `.liquid-ether-container` rule are gone from
+  globals.css; `LiquidEther.tsx` is unused again (kept).
+- **Files:** `components/sections/About.tsx` (rewrite),
+  `components/sections/about.css` (new), `app/globals.css` (`.abp-*` removed).
+- **Verified:** tsc clean for About (LiquidEther's pre-existing type errors
+  remain — its `@ts-nocheck` sits after `"use client"` so TS ignores it);
+  eslint 0 errors (1 `<img>` advisory, matching convention); headless
+  captures at 1400×850 and 420×820 of every station, the hover-fill, and the
+  stacked mobile layout; no console/page errors. Dev server restarted with a
+  clean `.next` after the usual stale-Turbopack-CSS episode.
+- **Still pending:** `/bhavith-parna-cv.pdf` still 404s (Download CV links to
+  it from About and Contact); PAT revoke; stale `ARCHITECTURE.md`.
+
+### 2026-10-05 — About round 2: user edits to "After Dark"
+- **What (all user requests, same session):** wordmark now `ABOUT / me`
+  (was `AFTER / dark`); subtitle trimmed to "Biomedical engineer"; **moon
+  removed** from the sky; top mono meta strip, the Exhibit A eyebrow, the
+  constellation hint/outro lines, the marquee strip and the "see you after
+  dark — B." sign-off all removed. Constellation retitled **"Things I'd be
+  doing"** with new content (building Lego, basketball, making playlists,
+  music too loud, horror films at 2am, driving around, drinking a lot of
+  coffee) and made more dynamic: stars drift with the cursor by depth
+  (spring-smoothed parallax), pulse, flare + recolour on hover, a gradient
+  cream→ember line, and a shooting star every 2.6–5.8s. **Cassette replaced
+  by a clickable iced-coffee SVG** (`IcedCoffee`): click tips the cup from
+  its base corner, ice tumbles out, coffee drains, a puddle + droplets
+  appear, caption flips to "…and that was № 4", then it rights and refills;
+  the live counter's caption counts the spills ("4 are mine · 1 on the
+  floor"). Dawn cloud fade softened (taller layer, 4-stop mask, 140% crop so
+  the photo's own moon stays out of frame). Last/first star labels pin to
+  the sky-box edges so they don't clip.
+- **Files:** `components/sections/About.tsx`, `components/sections/about.css`.
+- **Verified:** tsc/eslint clean for About; headless captures of the opening,
+  the constellation mid-draw with a hovered star, the fuel section before and
+  mid-spill, and the dawn; no console errors.
+
+### 2026-10-05 — About perf pass + new "first light" intro (DuskIntro)
+- **About jitter fixed.** User: the About page scrolled "jittery". Root cause
+  was per-frame full-viewport repaints: a `position:fixed` grain layer with
+  `mix-blend-mode:overlay` over the whole page, two full-screen star layers
+  animating `filter:brightness`, and the sky background rebuilt as a gradient
+  *string* every scroll frame (`useMotionTemplate`). Now: the sky is a solid
+  `backgroundColor` motion value plus two fixed gradient layers whose
+  **opacity** animates (compositor only); twinkle is an opacity pulse on one
+  layer; the grain lives inside the sticky sky layer with normal blending;
+  pinned sections get `contain: layout paint`; the per-word `will-change`
+  (30 layers) and the tape's `backdrop-filter` are gone; the sky spring is
+  stiffer so colour tracks the scroll instead of floating behind it.
+- **Intro replaced.** `SignalIntro.tsx` (black "recording" canvas, didn't
+  match the site) deleted along with its `.si-*` block. New
+  `components/DuskIntro.tsx` + `components/dusk-intro.css` ("first light"):
+  night navy → an ember seam draws across the centre → it opens into a 26vh
+  letterbox onto the Hero's cloud photo (slow pan) → eight words cut through
+  it in the site's faces (mono / Playfair italic / Anton / Caveat / Inter;
+  cream + ember): Biomedical Engineer, Neurotech, Brain–Computer Interfaces,
+  AI / ML, Embedded hardware, Rehab devices, Website building, Hyderabad,
+  India (user asked for real fields, not the coffee jokes) → the slit blooms
+  to the full frame → BHAVITH rises out of a clip in the Hero's exact type
+  and its terracotta/teal echo outlines slide into place → the name slides
+  onto the Hero's measured `.hs-name-main` and the overlay dissolves over the
+  identical photo. Same Hero handoff as before: `REVEAL_EVENT`
+  `{ morph:true, delay }` (Hero holds its BHAVITH for the slide, then staggers
+  the rest); Skip / Esc / reduced motion send `{ morph:false }`. Plays only
+  on a page load at `/`. Timeline constants `T_*` + `WORDS` at the top.
+- **Gotcha:** anything framer animates must not rely on CSS `transform` for
+  centring — framer overwrites `transform`. Use the CSS `translate` property
+  (`.dk-slit`, `.dk-role`).
+- **Files:** `components/DuskIntro.tsx` (new), `components/dusk-intro.css`
+  (new), `components/SignalIntro.tsx` (deleted), `app/layout.tsx`,
+  `components/sections/Hero.tsx` (import), `app/globals.css` (`.si-*`
+  removed; `.hs-held` kept), `components/sections/About.tsx`,
+  `components/sections/about.css`.
+- **Verified:** tsc clean (except pre-existing LiquidEther), eslint 0 errors;
+  headless frames across the timeline show seam → letterbox → words → bloom →
+  name + echoes → slide → Hero with no console errors. Headless screenshots
+  lag ~0.5s so exact beats want a live look.

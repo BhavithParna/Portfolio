@@ -1,0 +1,115 @@
+/* ─── Dusk intro overlay ("first light" — .dk-*) ──────────────────
+   Owned by components/DuskIntro.tsx. Palette = the Hero photo: night navy,
+   cream, ember, a little teal. The wordmark is the Hero's exact type so the
+   final slide lands pixel-for-pixel on .hs-name-main. */
+.dk-root {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #0b1a2c;
+  overflow: hidden;
+  color: #f4ecd8;
+}
+
+/* the ember seam at the centre line */
+.dk-seam {
+  position: absolute; left: 6vw; right: 6vw; top: 50%;
+  height: 2px; margin-top: -1px;
+  background: linear-gradient(90deg, transparent, #e8763f 18%, #f4ecd8 50%, #e8763f 82%, transparent);
+  box-shadow: 0 0 18px 2px rgba(232,118,63,0.6);
+  transform-origin: center;
+  pointer-events: none;
+}
+
+/* the letterbox: centred, grows from a hairline to the full frame */
+.dk-slit {
+  position: absolute; left: 0; right: 0; top: 50%;
+  translate: 0 -50%; /* `translate`, not transform: framer owns transform */
+  overflow: hidden;
+  will-change: height;
+}
+.dk-sky {
+  /* same box + crop as .hs-bg so the dissolve lands on the identical pixels */
+  position: absolute; inset: 0;
+  background: url(/images/hero-bg.jpg) center 42% / cover no-repeat;
+  will-change: transform;
+}
+.dk-scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(15,13,10,0.55) 0%, rgba(15,13,10,0.15) 32%, rgba(15,13,10,0.25) 60%, rgba(15,13,10,0.8) 100%);
+}
+
+/* kinetic run inside the slit */
+.dk-words {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 0 6vw;
+}
+.dk-word {
+  display: inline-block; white-space: nowrap;
+  color: #f4ecd8;
+  text-shadow: 0 2px 18px rgba(0,0,0,0.45);
+  will-change: transform, opacity, filter;
+}
+.dk-ember { color: #e8763f; }
+.dk-f-serif { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 600; font-size: clamp(2rem, 6vw, 5.6rem); letter-spacing: -0.01em; }
+.dk-f-mono  { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: clamp(0.9rem, 2.2vw, 1.6rem); letter-spacing: 0.32em; text-transform: uppercase; }
+.dk-f-hand  { font-family: 'Caveat', cursive; font-weight: 600; font-size: clamp(2.4rem, 7vw, 6.4rem); }
+.dk-f-anton { font-family: 'Anton', 'Inter', sans-serif; font-size: clamp(2.4rem, 7.5vw, 7rem); letter-spacing: 0.06em; text-transform: uppercase; }
+.dk-f-sans  { font-family: 'Inter', sans-serif; font-weight: 700; font-size: clamp(1.1rem, 3vw, 2.4rem); letter-spacing: 0.22em; text-transform: uppercase; }
+
+/* the wordmark — identical metrics to .hs-name-main / .hs-name-echo */
+.dk-name-anchor {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  line-height: 0.86;
+}
+.dk-name-row { position: relative; display: inline-block; will-change: transform; }
+.dk-clip { display: block; overflow: hidden; padding: 0.08em 0.1em 0.06em; margin: -0.08em -0.1em -0.06em; }
+.dk-name, .dk-echo {
+  display: inline-block;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(56px, 13vw, 190px);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  line-height: 0.86;
+}
+.dk-name { position: relative; color: #f4ecd8; will-change: transform; }
+.dk-echo {
+  position: absolute; left: 0; top: 0;
+  color: transparent;
+}
+.dk-echo-terra { -webkit-text-stroke: 1.5px #c1502e; }
+.dk-echo-teal { -webkit-text-stroke: 1.2px #3c7268; }
+
+.dk-role {
+  position: absolute; left: 50%; top: calc(50% + clamp(56px, 13vw, 190px) * 0.62);
+  translate: -50% 0;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.32em; text-indent: 0.32em; text-transform: uppercase;
+  color: #e9dfc9; white-space: nowrap; pointer-events: none;
+}
+
+/* reduced-motion card */
+.dk-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.dk-still {
+  font-family: 'Playfair Display', serif; font-weight: 700;
+  font-size: clamp(2.6rem, 8vw, 6rem); letter-spacing: 0.01em; color: #f4ecd8; white-space: nowrap;
+}
+
+.dk-skip {
+  position: absolute; bottom: 1.75rem; right: 1.75rem; z-index: 2;
+  min-width: 44px; min-height: 44px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(244,236,216,0.55);
+  background: rgba(11,26,44,0.35);
+  border: 1px solid rgba(244,236,216,0.22);
+  border-radius: 999px; padding: 0.55rem 1.1rem; cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.dk-skip:hover, .dk-skip:focus-visible { color: #f4ecd8; border-color: rgba(232,118,63,0.85); outline: none; }
+
+@media (max-width: 600px) {
+  .dk-seam { left: 3vw; right: 3vw; }
+}

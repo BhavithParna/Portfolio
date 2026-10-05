@@ -1,6 +1,6 @@
-"use client";
 // @ts-nocheck
 /* eslint-disable */
+"use client";
 
 /*
   LiquidEther — GPU fluid-simulation backdrop from React Bits (three.js).
