@@ -1015,3 +1015,47 @@ Each entry records the date, a summary of the change, and the files affected.
 ## Dusk intro + About, mobile pass (Oct 2026)
 - Intro word list = real fields (Neurotech, AI/ML, Website building…); `.dk-slit/.dk-role` centre via CSS `translate` (framer owns transform); `.dk-sky` inset:0 so only one moon during the crossfade.
 - About constellation ≤600px: labels wrap to 84px columns so neighbours don't collide; skybox 48vh.
+
+### 2026-10-06 — About: stunt-card deck replaces the constellation; Night Fuel removed
+- **What:** `Constellation`/`NightFuel`/`IcedCoffee` in `About.tsx` replaced by `StuntDeck` —
+  a pinned deck where each "thing I'd be doing" is a slab-type title card thrown at the
+  camera on a 3D hinge (swing in from off-right, slam with flash + shake, whip off-left),
+  over an ember slash panel, speed lines and a halftone screen that drift the other way.
+  Scroll-scrubbed both ways. Dawn links unchanged. Coffee counter + mug are gone.
+- **Why:** user found the constellation and coffee counter bland; meteor-shower and
+  mug-spill iterations were tried and rejected (too childish). Direction taken from the
+  Kick Buttowski intro (diagonal wipes, extruded slab type, 3D camera) in site palette.
+- **Files:** `components/sections/About.tsx`, `components/sections/about.css` (`.ad-deck*`, `.ad-card*`).
+
+### 2026-10-06 — Library: books open a scare, then liminal spaces
+- **What:** Clicking any shelf book never navigates. First time ever (localStorage
+  `lib-scream-done`): black screen, "what's your favorite scary movie?" handwritten
+  word by word (Homemade Apple, clip-path sweep, synthesized pen scratch), then WRONG
+  (Nosifer) plastered with knocking panned hard to the right ear, then cut back to the
+  shelf. Every later click: hard cut into a random Three.js liminal space (backrooms,
+  poolrooms, cistern, hotel corridor, parking garage — procedural textures, fog, wrapping
+  camera drift, flickering lights, random seed) stamped ERROR 404, ~5s, then back.
+  Click / Esc skips. Modifier-click still opens the real page in a new tab.
+- **Files:** `components/ScreamGate.tsx` (new), `components/scream-gate.css` (new),
+  `components/LiminalSpace.tsx` (new), `components/sections/Library.tsx` (`onOpen` on
+  `SpineBook`, gate state, portal). Dev dep `@types/three` added.
+- **Gotcha:** the gate is portalled to `<body>` — the stage sits in a z-index:1 wrapper
+  below the dock, so a fixed overlay inside it can't cover the dock.
+
+### 2026-10-06 — Constellation restored as the Big Dipper; Horror book owns the scare
+- **What:** Stunt-card deck reverted. The original `Constellation` is back, with the seven
+  hobbies placed as the Big Dipper (Alkaid → Mizar → Alioth → Megrez → Phecda → Merak →
+  Dubhe, bowl closed back to Megrez), small mono star names above each dot, and a per-star
+  label side (`side` in `STARS`, `data-side` on `.ad-star`) so the bowl labels don't pile up.
+  Library: the Horror book (`/horror`) plays the scare every time (handwritten line → WRONG
+  → knocking, right ear only, a realistic door knock: lowpassed impact + three decaying
+  resonances + slap-back echo), then opens `/horror`. Every other book: liminal 404, back to
+  the shelf. No localStorage gating any more.
+- **Files:** `components/sections/About.tsx`, `components/sections/about.css`,
+  `components/ScreamGate.tsx`, `components/sections/Library.tsx`.
+
+### 2026-10-06 — Scare line back to the dripping typewriter
+- **What:** The handwritten (Homemade Apple) reveal is gone; the line is Nosifer again,
+  typed letter by letter with key-strike ticks, spelled "favorite", forced onto one line
+  (`white-space: nowrap`, size clamp by vw). WRONG + right-ear knocking unchanged.
+- **Files:** `components/ScreamGate.tsx`, `components/scream-gate.css`.

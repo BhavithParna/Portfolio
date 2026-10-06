@@ -34,11 +34,10 @@ import "./about.css";
     1. Opening       — "ABOUT / me" wordmark in the Hero's own type.
     2. Exhibit A     — pinned Polaroid + the lead paragraph lit word by word,
                        with the facts strip (year, school, degree…) beneath.
-    3. Constellation — pinned sky; the things I'd be doing are stars that
-                       drift with the cursor, flare on hover, and get joined
-                       up as you scroll. Shooting stars every few seconds.
-    4. Night fuel    — live coffee counter + an iced coffee you can knock over.
-    5. Dawn          — CV / GitHub / LinkedIn as giant hover-fill rows.
+    3. Constellation — pinned sky; the things I'd be doing are the seven
+                       stars of the Big Dipper, drifting with the cursor,
+                       flaring on hover, joined up as you scroll.
+    4. Dawn          — CV / GitHub / LinkedIn as giant hover-fill rows.
 
   The stage renders this inside `.scene` (an overflow:auto box), so every
   useScroll here is bound to that element via ScrollBox, not the window.
@@ -60,17 +59,18 @@ const FACTS: { k: string; v: string }[] = [
   { k: "focus", v: "Neurotech · BCI" },
 ];
 
-/* Things I'd be doing. Positions are % of the sky box; the order is the
-   order the lines get drawn in; `depth` sets how much a star drifts with the
-   cursor (farther stars move less). */
+/* Things I'd be doing, as the seven stars of the Big Dipper (Ursa Major),
+   handle tip to bowl. Positions are % of the sky box, laid out from the
+   real asterism; the order is the order the line is drawn in; `depth` is
+   how much a star drifts with the cursor (farther stars move less). */
 const STARS = [
-  { x: 9,  y: 64, r: 1.1, depth: 0.6, name: "building Lego",            note: "still. no plans to stop." },
-  { x: 21, y: 28, r: 1.4, depth: 1.0, name: "basketball",               note: "pick-up games, questionable ankles" },
-  { x: 36, y: 50, r: 0.9, depth: 0.4, name: "making playlists",         note: "nobody asked. everybody gets one." },
-  { x: 50, y: 18, r: 1.5, depth: 1.0, name: "music, too loud",          note: "the lumineers, on repeat" },
-  { x: 62, y: 50, r: 1.0, depth: 0.7, name: "horror films at 2am",      note: "the scarier the better" },
-  { x: 77, y: 30, r: 1.2, depth: 0.5, name: "driving around",           note: "no destination, good playlist" },
-  { x: 90, y: 74, r: 1.4, depth: 0.9, name: "drinking a lot of coffee", note: "№ 3 is a lifestyle" },
+  { x: 7,  y: 30, r: 1.2, depth: 0.6, side: "above", star: "Alkaid", name: "building Lego",            note: "still. no plans to stop." },
+  { x: 21, y: 21, r: 1.1, depth: 1.0, side: "below", star: "Mizar",  name: "basketball",               note: "pick-up games, questionable ankles" },
+  { x: 34, y: 27, r: 1.3, depth: 0.4, side: "above", star: "Alioth", name: "making playlists",         note: "nobody asked. everybody gets one." },
+  { x: 47, y: 36, r: 0.9, depth: 1.0, side: "right", star: "Megrez", name: "music, too loud",          note: "the lumineers, on repeat" },
+  { x: 51, y: 66, r: 1.1, depth: 0.7, side: "below", star: "Phecda", name: "horror films at 2am",      note: "the scarier the better" },
+  { x: 74, y: 72, r: 1.2, depth: 0.5, side: "below", star: "Merak",  name: "driving around",           note: "no destination, good playlist" },
+  { x: 72, y: 38, r: 1.4, depth: 0.9, side: "above", star: "Dubhe",  name: "drinking a lot of coffee", note: "№ 3 is a lifestyle" },
 ];
 
 const LINKS = [
@@ -110,7 +110,6 @@ function Night() {
       <Opening />
       <Exhibit />
       <Constellation />
-      <NightFuel />
       <Dawn />
     </>
   );
@@ -289,7 +288,8 @@ function Constellation() {
     rawY.set(0);
   };
 
-  const points = STARS.map((s) => `${s.x * 10},${s.y * 6}`).join(" ");
+  // handle → bowl, then the bowl closes back on Megrez
+  const points = [...STARS, STARS[3]].map((s) => `${s.x * 10},${s.y * 6}`).join(" ");
 
   return (
     <div className="ad-constel" ref={ref}>
@@ -353,11 +353,13 @@ function Star({
       onMouseEnter={() => setHot(true)}
       onMouseLeave={() => setHot(false)}
       data-hot={hot}
+      data-side={star.side}
     >
       <motion.span
         className="ad-star-dot"
         style={{ opacity: lit, scale, width: `${star.r * 14}px`, height: `${star.r * 14}px` }}
       />
+      <motion.span className="ad-star-name" style={{ opacity: lit }}>{star.star}</motion.span>
       <motion.span className="ad-star-label" style={{ opacity: lit, y: labelY }}>
         <b>{star.name}</b>
         <i className="ad-hand">{star.note}</i>
@@ -393,208 +395,6 @@ function ShootingStars() {
       style={{ left: `${shot.x}%`, top: `${shot.y}%`, width: `${shot.len}px`, transform: `rotate(${shot.ang}deg)` }}
       aria-hidden="true"
     />
-  );
-}
-
-/* ─── 5. night fuel: coffee counter + an iced coffee you can knock over ── */
-const CUPS_PER_DAY = 2_250_000_000;
-const CUPS_PER_MS = CUPS_PER_DAY / 86_400_000;
-
-function CoffeeStat({ spills }: { spills: number }) {
-  const [count, setCount] = useState<number | null>(null);
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date();
-      const midnightUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-      setCount(Math.floor((Date.now() - midnightUTC) * CUPS_PER_MS));
-    };
-    tick();
-    const id = setInterval(tick, 1200);
-    return () => clearInterval(id);
-  }, []);
-
-  const text = count === null ? "brewing…" : count.toLocaleString("en-US");
-  return (
-    <div className="ad-coffee">
-      <div className="ad-eyebrow">NIGHT FUEL · LIVE</div>
-      <div className="ad-coffee-num" aria-live="off">
-        {text.split("").map((ch, i) =>
-          /\d/.test(ch) ? (
-            <span className="ad-digit" key={i}>
-              <span key={ch} className="ad-digit-roll">{ch}</span>
-            </span>
-          ) : (
-            <span className="ad-digit ad-digit-sep" key={i}>{ch}</span>
-          ),
-        )}
-      </div>
-      <div className="ad-coffee-cap">
-        coffees drunk worldwide today<br />
-        <span>
-          1 bean ≈ 100M cups · {3 + spills} are mine
-          {spills > 0 && ` · ${spills} on the floor`}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function NightFuel() {
-  const box = useScrollBox();
-  const [spills, setSpills] = useState(0);
-  return (
-    <div className="ad-fuel">
-      <motion.div
-        className="ad-fuel-grid"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ root: box, once: true, margin: "-15% 0px" }}
-        transition={{ duration: 0.7, ease: [0.2, 0.8, 0.25, 1] }}
-      >
-        <CoffeeStat spills={spills} />
-        <IcedCoffee onSpill={() => setSpills((n) => n + 1)} />
-      </motion.div>
-    </div>
-  );
-}
-
-/* Iced coffee cutout. Click: the cup tips, ice tumbles out, coffee floods
-   into a puddle with a few droplets, then it rights itself and refills. */
-const ICE = [
-  { x: 62, y: 78, r: -14 },
-  { x: 104, y: 70, r: 22 },
-  { x: 84, y: 112, r: 8 },
-  { x: 120, y: 118, r: -28 },
-];
-const DROPS = [
-  { dx: -70, dy: -40, d: 0.05 },
-  { dx: -120, dy: -10, d: 0.1 },
-  { dx: -40, dy: -70, d: 0.0 },
-  { dx: -150, dy: 20, d: 0.14 },
-  { dx: -95, dy: -60, d: 0.08 },
-];
-
-function IcedCoffee({ onSpill }: { onSpill: () => void }) {
-  const [state, setState] = useState<"idle" | "spilled">("idle");
-  const reduce = useReducedMotion();
-  const busy = useRef(false);
-
-  const knock = () => {
-    if (busy.current) return;
-    busy.current = true;
-    setState("spilled");
-    onSpill();
-    setTimeout(() => {
-      setState("idle");
-      setTimeout(() => (busy.current = false), 900);
-    }, 2600);
-  };
-
-  const spilled = state === "spilled";
-  const ease = [0.2, 0.8, 0.25, 1] as const;
-
-  return (
-    <div className="ad-iced" data-spilled={spilled}>
-      <button type="button" className="ad-iced-btn" onClick={knock} aria-label="Knock over the iced coffee">
-        <svg viewBox="0 0 320 300" className="ad-iced-svg" aria-hidden="true">
-          <defs>
-            <linearGradient id="ad-coffee-grad" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stopColor="#c9a27a" />
-              <stop offset="0.35" stopColor="#8a5a34" />
-              <stop offset="1" stopColor="#4a2a16" />
-            </linearGradient>
-            <linearGradient id="ad-glass-grad" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0" stopColor="#ffffff" stopOpacity="0.35" />
-              <stop offset="0.45" stopColor="#ffffff" stopOpacity="0.04" />
-              <stop offset="1" stopColor="#ffffff" stopOpacity="0.22" />
-            </linearGradient>
-            <clipPath id="ad-cup-clip">
-              <path d="M52 60 L66 250 Q68 268 86 268 L150 268 Q168 268 170 250 L184 60 Z" />
-            </clipPath>
-          </defs>
-
-          {/* puddle + droplets (behind the cup) */}
-          <motion.ellipse
-            className="ad-puddle"
-            cx="150" cy="282" rx="140" ry="14"
-            initial={false}
-            animate={spilled ? { scaleX: 1, scaleY: 1, opacity: 0.95 } : { scaleX: 0, scaleY: 0, opacity: 0 }}
-            transition={{ duration: spilled ? 0.9 : 0.5, ease, delay: spilled ? 0.35 : 0 }}
-            style={{ originX: "70%", originY: "100%" }}
-          />
-          {DROPS.map((d, i) => (
-            <motion.circle
-              key={i}
-              className="ad-drop"
-              cx="100" cy="230" r={4 + (i % 3)}
-              initial={false}
-              animate={spilled ? { x: d.dx, y: [0, d.dy, 50], opacity: [0, 1, 0] } : { x: 0, y: 0, opacity: 0 }}
-              transition={spilled ? { duration: 0.8, ease: "easeOut", delay: 0.3 + d.d } : { duration: 0 }}
-            />
-          ))}
-
-          {/* the cup — tips over from its bottom-left corner */}
-          <motion.g
-            initial={false}
-            animate={spilled ? { rotate: reduce ? 0 : -78, x: -10, y: 8 } : { rotate: 0, x: 0, y: 0 }}
-            transition={{ type: "spring", stiffness: spilled ? 120 : 90, damping: spilled ? 11 : 14, mass: 1.1 }}
-            style={{ originX: "66px", originY: "268px" }}
-          >
-            {/* coffee */}
-            <g clipPath="url(#ad-cup-clip)">
-              <motion.rect
-                className="ad-coffee-fill"
-                x="40" width="160" height="260"
-                initial={false}
-                animate={spilled ? { y: 300 } : { y: 96 }}
-                transition={spilled ? { duration: 0.7, ease: "easeIn", delay: 0.2 } : { duration: 1.1, ease }}
-                fill="url(#ad-coffee-grad)"
-              />
-              <motion.rect
-                x="40" width="160" height="14"
-                initial={false}
-                animate={spilled ? { y: 300, opacity: 0 } : { y: 96, opacity: 1 }}
-                transition={spilled ? { duration: 0.5, ease: "easeIn", delay: 0.2 } : { duration: 1.1, ease }}
-                fill="#e9d6bd" opacity="0.85"
-              />
-              {/* ice — jiggles idle, tumbles out on spill */}
-              {ICE.map((c, i) => (
-                <motion.rect
-                  key={i}
-                  className="ad-ice"
-                  x={c.x} y={c.y} width="34" height="34" rx="7"
-                  initial={false}
-                  animate={spilled ? { y: c.y + 230, x: c.x - 60 - i * 10, rotate: c.r + 140 } : { y: c.y, x: c.x, rotate: c.r }}
-                  transition={spilled ? { duration: 0.75, ease: "easeIn", delay: 0.22 + i * 0.05 } : { duration: 0.9, ease }}
-                  style={{ originX: `${c.x + 17}px`, originY: `${c.y + 17}px` }}
-                />
-              ))}
-            </g>
-            {/* glass */}
-            <path d="M52 60 L66 250 Q68 268 86 268 L150 268 Q168 268 170 250 L184 60 Z" className="ad-glass" />
-            <path d="M52 60 L66 250 Q68 268 86 268 L150 268 Q168 268 170 250 L184 60 Z" fill="url(#ad-glass-grad)" />
-            {/* lid */}
-            <rect x="44" y="48" width="148" height="16" rx="6" className="ad-lid" />
-            {/* straw */}
-            <motion.rect
-              className="ad-straw"
-              x="128" y="-6" width="12" height="150" rx="5"
-              initial={false}
-              animate={spilled ? { rotate: 40, x: 60, y: 30 } : { rotate: -8, x: 0, y: 0 }}
-              transition={{ type: "spring", stiffness: 100, damping: 12 }}
-              style={{ originX: "134px", originY: "60px" }}
-            />
-            {/* condensation */}
-            <circle cx="70" cy="150" r="3" className="ad-dew" />
-            <circle cx="78" cy="190" r="2.2" className="ad-dew" />
-            <circle cx="168" cy="130" r="2.6" className="ad-dew" />
-          </motion.g>
-        </svg>
-      </button>
-      <p className="ad-hand ad-iced-cap">
-        {spilled ? "…and that was № 4." : "iced, always. go on, knock it over."}
-      </p>
-    </div>
   );
 }
 

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRef, useEffect, useState } from "react";
 import { shelveProjects } from "@/lib/projects";
+import ScreamGate from "@/components/ScreamGate";
 
 /* ─── Texture: SVG noise as data URI for bookcloth grain ─────── */
 const NOISE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`;
@@ -203,13 +204,15 @@ function FoilRule({ color, opacity = 0.55 }: { color: string; opacity?: number }
 
 /* ─── Spine Book (project books — narrow vertical spine) ─────── */
 function SpineBook({
-  href, title, context, award, w, h, gradient, foil, mb, volume, lean = 0, onActivate,
+  href, title, context, award, w, h, gradient, foil, mb, volume, lean = 0, onActivate, onOpen,
 }: {
   href?: string; title: string; context: string;
   award: boolean; w: number; h: number;
   gradient: string; foil: string; mb: number;
   volume?: string; lean?: number;
   onActivate?: (e: React.MouseEvent<HTMLElement>) => void;
+  /** Intercepts the link: the Library runs the first open through ScreamGate. */
+  onOpen?: (href: string, e: React.MouseEvent<HTMLElement>) => void;
 }) {
   const rest = `rotate(${lean}deg)`;
   const shared = {
@@ -355,7 +358,11 @@ function SpineBook({
   );
 
   if (href) {
-    return <Link href={href} {...shared}>{inner}</Link>;
+    return (
+      <Link href={href} {...shared} onClick={onOpen ? e => onOpen(href, e) : undefined}>
+        {inner}
+      </Link>
+    );
   }
   return (
     <div
@@ -564,6 +571,15 @@ export default function Library() {
   const sectionRef = useRef<HTMLElement>(null);
   const lifeWrapRef = useRef<HTMLDivElement>(null);
   const [note, setNote] = useState<(Quote & { x: number }) | null>(null);
+  // The Horror book plays the scare, then opens. Every other book drops
+  // you in a liminal space and brings you back here. Modifier-clicks (new
+  // tab) still open the real page.
+  const [gate, setGate] = useState<{ mode: "scream" | "liminal"; href?: string } | null>(null);
+  const openBook = (href: string, e: React.MouseEvent<HTMLElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    setGate(href === "/horror" ? { mode: "scream", href } : { mode: "liminal" });
+  };
 
   /* Clicking anywhere dismisses the pinned quote note */
   useEffect(() => {
@@ -642,6 +658,7 @@ export default function Library() {
                 foil={m.foil}
                 mb={companion ? 0 : m.mb}
                 lean={companion ? -5 : 0}
+                onOpen={openBook}
               />
             );
           })}
@@ -671,6 +688,7 @@ export default function Library() {
                 foil={b.foil}
                 mb={b.mb}
                 onActivate={b.quote ? e => showQuote(e, b.quote!) : undefined}
+                onOpen={openBook}
               />
             ))}
 
@@ -752,6 +770,7 @@ export default function Library() {
         <ShelfPlank />
 
       </div>
+    {gate && <ScreamGate mode={gate.mode} href={gate.href} onClose={() => setGate(null)} />}
     </section>
   );
 }

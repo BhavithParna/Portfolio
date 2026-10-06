@@ -221,6 +221,12 @@
   font-size: clamp(2.2rem, 5vw, 4.6rem); line-height: 1; color: var(--cream);
 }
 .ad-constel-h em { font-style: italic; font-weight: 600; color: var(--ember); }
+.ad-constel-sub { margin-top: 0.9rem; opacity: 0.75; font-size: 1.25rem; }
+.ad-star-name {
+  position: absolute; left: 50%; bottom: calc(100% + 10px); translate: -50% 0;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--cream-2); opacity: 0.55; white-space: nowrap;
+}
 .ad-skybox {
   position: relative; width: min(100% - 4rem, 1240px); height: 58vh; margin: 8vh auto 0;
 }
@@ -257,59 +263,20 @@
   100% { opacity: 0; translate: -260px 110px; scale: 1 1; }
 }
 .ad-star-label {
-  position: absolute; left: 50%; top: calc(100% + 10px); transform: translateX(-50%);
+  /* `translate`, not transform: framer owns transform on this element */
+  position: absolute; left: 50%; top: calc(100% + 10px); translate: -50% 0;
   display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
   white-space: nowrap; text-align: center;
 }
 .ad-star-label b { font-family: var(--serif); font-style: italic; font-weight: 600; font-size: clamp(1rem, 1.7vw, 1.55rem); color: var(--cream); }
 .ad-star-label i { font-style: normal; font-size: 1.1rem; opacity: 0.85; }
 .ad-star-label b, .ad-star-label i { transition: color 0.3s, opacity 0.3s; }
-.ad-star:first-child .ad-star-label { left: 0; transform: none; align-items: flex-start; text-align: left; }
-.ad-star:last-of-type .ad-star-label { left: auto; right: 0; transform: none; align-items: flex-end; text-align: right; }
-
-/* ═══ 4. night fuel ═══ */
-.ad-fuel { position: relative; z-index: 1; padding: 10vh 0 10vh; }
-.ad-fuel-grid {
-  display: grid; grid-template-columns: 1.15fr 0.85fr; gap: clamp(2rem, 6vw, 6rem); align-items: center;
-  padding: 0 clamp(1.5rem, 6vw, 7rem);
-}
-.ad-coffee .ad-eyebrow { margin-bottom: 1rem; }
-.ad-coffee-num {
-  display: flex; flex-wrap: wrap;
-  font-family: 'Anton', 'Inter', sans-serif;
-  font-size: clamp(2.4rem, 5.4vw, 5.6rem); line-height: 1; letter-spacing: 0.02em;
-  color: var(--cream);
-}
-.ad-digit { display: inline-block; overflow: hidden; height: 1em; }
-.ad-digit-sep { color: var(--ember); }
-.ad-digit-roll { display: inline-block; animation: ad-roll 0.5s cubic-bezier(0.2, 0.8, 0.25, 1) both; }
-@keyframes ad-roll { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.ad-coffee-cap {
-  margin-top: 1rem; font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--cream-2); line-height: 1.9;
-}
-.ad-coffee-cap span { opacity: 0.6; }
-
-/* iced coffee cutout */
-.ad-iced { justify-self: end; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
-.ad-iced-btn {
-  background: none; border: none; padding: 0; cursor: pointer;
-  width: min(100%, 320px); display: block;
-  filter: drop-shadow(0 30px 40px rgba(0,0,0,0.6));
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.25, 1);
-}
-.ad-iced-btn:hover { transform: translateY(-4px) rotate(-1.5deg); }
-.ad-iced[data-spilled="true"] .ad-iced-btn:hover { transform: none; }
-.ad-iced-btn:focus-visible { outline: 2px solid var(--cream); outline-offset: 6px; border-radius: 12px; }
-.ad-iced-svg { width: 100%; height: auto; overflow: visible; display: block; }
-.ad-glass { fill: rgba(244,236,216,0.07); stroke: rgba(244,236,216,0.7); stroke-width: 2.5; }
-.ad-lid { fill: var(--cream); }
-.ad-straw { fill: var(--ember); }
-.ad-ice { fill: rgba(255,255,255,0.55); stroke: rgba(255,255,255,0.9); stroke-width: 1.5; }
-.ad-dew { fill: rgba(255,255,255,0.6); }
-.ad-puddle { fill: #4a2a16; }
-.ad-drop { fill: #6b3d1e; }
-.ad-iced-cap { font-size: 1.3rem; opacity: 0.85; text-align: center; }
+/* label placement per star so the bowl doesn't pile up */
+.ad-star[data-side="above"] .ad-star-label { top: auto; bottom: calc(100% + 26px); }
+.ad-star[data-side="above"] .ad-star-name { bottom: calc(100% + 10px); }
+.ad-star[data-side="above"] .ad-star-label { bottom: calc(100% + 28px); }
+.ad-star[data-side="right"] .ad-star-label { left: calc(100% + 16px); top: 50%; translate: 0 -50%; align-items: flex-start; text-align: left; }
+.ad-star:first-child .ad-star-label { left: 0; translate: 0 0; align-items: flex-start; text-align: left; }
 
 /* ═══ 5. dawn ═══ */
 .ad-dawn {
@@ -365,11 +332,10 @@
   .ad-polaroid { width: min(70vw, 300px); }
   .ad-lead { font-size: clamp(1.3rem, 4.6vw, 2rem); }
   .ad-facts { gap: 0.8rem 1.6rem; margin-top: 1.6rem; }
-  .ad-fuel-grid { grid-template-columns: 1fr; }
-  .ad-iced { justify-self: center; }
   .ad-constel { height: 260vh; }
   .ad-skybox { height: 52vh; margin-top: 14vh; }
   .ad-star-label i { display: none; }
+  .ad-star-name { display: none; }
 }
 @media (max-width: 600px) {
   /* zoom the cloud crop so the photo's own moon stays out of frame */
@@ -381,7 +347,6 @@
   .ad-star-label { white-space: normal; width: 84px; top: calc(100% + 8px); line-height: 1.1; }
   .ad-star-label b { font-size: 0.78rem; }
   .ad-star:first-child .ad-star-label, .ad-star:last-of-type .ad-star-label { width: 110px; }
-  .ad-skybox { height: 48vh; margin-top: 12vh; }
   .ad-scrollcue { bottom: 7.5rem; }
   .ad-link { grid-template-columns: 1fr auto; }
   .ad-link-meta { display: none; }
@@ -389,7 +354,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .ad-letter > span { animation: none; transform: none; }
-  .ad-enter, .ad-stars-b, .ad-cue-line, .ad-digit-roll, .ad-star-dot, .ad-shooting { animation: none !important; }
+  .ad-enter, .ad-stars-b, .ad-cue-line, .ad-star-dot, .ad-shooting { animation: none !important; }
   .ad-word { opacity: 1 !important; transform: none !important; }
-  .ad-link-label, .ad-link-arrow, .ad-link-fill, .ad-iced-btn { transition: none; }
+  .ad-link-label, .ad-link-arrow, .ad-link-fill { transition: none; }
 }
