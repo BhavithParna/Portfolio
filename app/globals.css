@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Pacifico&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,500;1,600;1,700&family=Special+Elite&display=swap');
+/* Web fonts are loaded from <head> in app/layout.tsx — an @import here is
+   dropped by the CSS bundler, which left the site without its typefaces. */
 @import "tailwindcss";
 
 /* ─── Tokens ─────────────────────────────────────────────────── */
@@ -912,170 +913,201 @@ body {
   .pj-enter { animation: none; }
 }
 
-/* ─── Retro dock navigation (.dock-*) ────────────────────────── */
+/* ─── Library: arrow under the Luca book ─────────────────────── */
+.lib-pointer {
+  position: absolute;
+  top: calc(100% + 4px);
+  width: 0;
+  z-index: 3;
+  pointer-events: none;
+  color: #BC5A3C;
+  animation: lib-pointer-bob 1.5s ease-in-out infinite;
+}
+.lib-pointer-arrow {
+  position: absolute;
+  left: -24px;
+  top: 0;
+  width: 52px;
+  height: 56px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* the arrow keeps redrawing itself, as if someone's just scribbled it */
+.lib-pointer-line { stroke-dasharray: 80; animation: lib-pointer-draw 3s ease-in-out infinite; }
+.lib-pointer-head { stroke-dasharray: 40; animation: lib-pointer-draw-head 3s ease-in-out infinite; }
+.lib-pointer-note {
+  position: absolute;
+  right: 20px;
+  top: 30px;
+  font-family: 'Caveat', cursive;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transform: rotate(-5deg);
+  transform-origin: right center;
+}
+@keyframes lib-pointer-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(7px) rotate(-3deg); }
+}
+@keyframes lib-pointer-draw {
+  0% { stroke-dashoffset: 80; }
+  28%, 100% { stroke-dashoffset: 0; }
+}
+@keyframes lib-pointer-draw-head {
+  0%, 24% { stroke-dashoffset: 40; }
+  40%, 100% { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lib-pointer, .lib-pointer-line, .lib-pointer-head { animation: none; }
+}
+
+/* ─── Glass dock navigation (.dock-*) ────────────────────────────
+   One floating pane of glass, pinned to the bottom of every page.
+   `data-tone` (set by DockNav from whatever is underneath) swaps a light
+   pane with ink icons for a dark pane with white icons. */
 
 .dock-wrap {
+  /* dark tone (default): for night skies, photos, charcoal */
+  --dock-fg: #ffffff;
+  --dock-fg-dim: rgba(255, 255, 255, 0.72);
+  --dock-glass: rgba(28, 28, 32, 0.46);
+  --dock-sheen: rgba(255, 255, 255, 0.14);
+  --dock-edge: rgba(255, 255, 255, 0.18);
+  --dock-rim: rgba(255, 255, 255, 0.32);
+  --dock-ring: rgba(0, 0, 0, 0.3);
+  --dock-pill: rgba(255, 255, 255, 0.2);
+  --dock-pill-edge: rgba(255, 255, 255, 0.28);
+  --dock-hover: rgba(255, 255, 255, 0.1);
+  --dock-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --dock-chip: rgba(20, 20, 23, 0.86);
+  --dock-chip-fg: #fff;
+
   position: fixed;
-  bottom: 1.3rem;
+  bottom: max(1.15rem, env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   z-index: 40;
 }
-
-/* invisible reveal strip + peeking paper tab (immersive routes only) */
-.dock-hotzone {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 90px;
-  z-index: 39;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-.dock-peek {
-  width: 64px;
-  height: 11px;
-  border: 1.5px dashed rgba(246, 239, 221, 0.65);
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  background: rgba(246, 239, 221, 0.22);
-}
-/* tucked over cream paper (the Workshop) — ink tab, not a pale one */
-.dock-peek-ink {
-  border-color: rgba(51, 39, 28, 0.5);
-  background: rgba(51, 39, 28, 0.1);
+.dock-wrap[data-tone="light"] {
+  --dock-fg: #151515;
+  --dock-fg-dim: rgba(21, 21, 21, 0.68);
+  --dock-glass: rgba(255, 255, 255, 0.52);
+  --dock-sheen: rgba(255, 255, 255, 0.55);
+  --dock-edge: rgba(255, 255, 255, 0.75);
+  --dock-rim: rgba(255, 255, 255, 0.95);
+  --dock-ring: rgba(20, 20, 20, 0.09);
+  --dock-pill: #151515;
+  --dock-pill-edge: #151515;
+  --dock-hover: rgba(20, 20, 20, 0.07);
+  --dock-shadow: 0 18px 38px -14px rgba(30, 25, 15, 0.32), 0 3px 10px rgba(30, 25, 15, 0.1);
+  --dock-chip: rgba(21, 21, 21, 0.92);
+  --dock-chip-fg: #fff;
 }
 
 .dock {
   position: relative;
   display: flex;
-  align-items: flex-end;
-  gap: 0.55rem;
-  padding: 0.55rem 0.8rem 0.5rem;
-  background: linear-gradient(180deg, rgba(252, 247, 236, 0.92), rgba(240, 231, 210, 0.88));
-  backdrop-filter: blur(12px) saturate(1.15);
-  -webkit-backdrop-filter: blur(12px) saturate(1.15);
-  border: 1.5px solid #33271C;
-  border-radius: 14px;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, var(--dock-sheen), transparent 62%),
+    var(--dock-glass);
+  backdrop-filter: blur(26px) saturate(1.9);
+  -webkit-backdrop-filter: blur(26px) saturate(1.9);
+  border: 1px solid var(--dock-edge);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -1px 0 rgba(51, 39, 28, 0.08),
-    0 2px 0 rgba(51, 39, 28, 0.9),
-    0 6px 14px rgba(40, 26, 14, 0.16),
-    0 18px 38px rgba(40, 26, 14, 0.3);
-}
-/* glossy sheen sweeping across the tray */
-.dock::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(115deg,
-    rgba(255, 255, 255, 0.4) 0%,
-    rgba(255, 255, 255, 0.12) 30%,
-    transparent 48%);
+    inset 0 1px 0 var(--dock-rim),
+    0 0 0 1px var(--dock-ring),
+    var(--dock-shadow);
+  transition: background 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease;
 }
 
-.dock-item {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+.dock-item { position: relative; display: flex; justify-content: center; }
 
 .dock-btn {
   display: block;
   background: none;
   border: none;
   padding: 0;
+  margin: 0;
   cursor: pointer;
   line-height: 0;
+  border-radius: 999px;
+  color: var(--dock-fg-dim);
+  transition: color 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
 }
+.dock-item:hover .dock-btn,
+.dock-item[data-active="true"] .dock-btn { color: var(--dock-fg); }
+.dock-wrap[data-tone="light"] .dock-item[data-active="true"] .dock-btn { color: #fff; }
 
-/* the postage stamp: dashed border reads as perforation.
-   tint comes inline (backgroundColor); the gradient is the gloss on top */
-.dock-stamp {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.dock-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
   width: 46px;
   height: 46px;
-  border: 1.5px dashed #33271C;
-  border-radius: 5px;
-  transform-origin: bottom center;
-  background-image: linear-gradient(170deg,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(255, 255, 255, 0.12) 45%,
-    rgba(51, 39, 28, 0.05) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -1px 0 rgba(51, 39, 28, 0.07),
-    1.5px 2px 0 rgba(51, 39, 28, 0.35),
-    0 4px 10px rgba(40, 26, 14, 0.14);
+  border-radius: 999px;
+  transition: background 0.2s ease;
 }
-.dock-glyph { width: 26px; height: 26px; }
+.dock-item:not([data-active="true"]):hover .dock-cell { background: var(--dock-hover); }
 
-/* handwritten label floats up on hover */
+/* the sliding pill behind the current page */
+.dock-active {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--dock-pill);
+  border: 1px solid var(--dock-pill-edge);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 4px 10px -4px rgba(0, 0, 0, 0.4);
+  transition: background 0.45s ease, border-color 0.45s ease;
+}
+.dock-icon { position: relative; display: grid; place-items: center; transform-origin: 50% 80%; }
+
+/* label chip */
 .dock-label {
   position: absolute;
-  bottom: calc(100% + 1.5rem);
-  font-family: 'Caveat', cursive;
-  font-size: 1.35rem;
+  bottom: calc(100% + 16px);
+  left: 50%;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   line-height: 1;
-  color: #33271C;
-  background: rgba(246, 239, 221, 0.95);
-  border: 1px solid rgba(51, 39, 28, 0.55);
-  padding: 0.2rem 0.65rem 0.25rem;
-  border-radius: 3px;
-  transform: rotate(-3deg) translateY(6px);
+  color: var(--dock-chip-fg);
+  background: var(--dock-chip);
+  padding: 0.44rem 0.62rem;
+  border-radius: 8px;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(60, 40, 20, 0.18);
+  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.5);
   opacity: 0;
+  transform: translate(-50%, 5px) scale(0.96);
   pointer-events: none;
-  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.16s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .dock-item:hover .dock-label,
-.dock-btn:focus-visible + .dock-label,
 .dock-item:has(.dock-btn:focus-visible) .dock-label {
   opacity: 1;
-  transform: rotate(-3deg) translateY(0);
+  transform: translate(-50%, 0) scale(1);
 }
 
-/* active-scene ink dot */
-.dock-ink-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  margin-top: 0.3rem;
-  background: #33271C;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-.dock-ink-dot[data-active="true"] { opacity: 0.85; }
-
-/* perforation divider between scene stamps and page links */
-.dock-divider {
-  align-self: stretch;
-  width: 0;
-  margin: 0.1rem 0.5rem 0.4rem;
-  border-left: 1.5px dashed rgba(51, 39, 28, 0.45);
-}
-
-.dock-btn:focus-visible .dock-stamp {
-  outline: 2px solid #BC5A3C;
-  outline-offset: 2px;
-}
+.dock-btn:focus-visible { outline: 2px solid var(--dock-fg); outline-offset: 2px; }
 
 @media (max-width: 640px) {
-  .dock-wrap { bottom: 0.9rem; }
-  .dock { gap: 0.4rem; padding: 0.45rem 0.6rem 0.4rem; }
-  .dock-stamp { width: 40px; height: 40px; }
-  .dock-glyph { width: 22px; height: 22px; }
-  .dock-divider { margin: 0.1rem 0.3rem 0.3rem; }
+  .dock-cell { width: 44px; height: 44px; }
+}
+@media (hover: none) {
+  .dock-label { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .dock-label { transition: none; }
+  .dock, .dock-label, .dock-active { transition: none; }
 }
+/* reload */

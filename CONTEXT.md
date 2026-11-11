@@ -1059,3 +1059,62 @@ Each entry records the date, a summary of the change, and the files affected.
   typed letter by letter with key-strike ticks, spelled "favorite", forced onto one line
   (`white-space: nowrap`, size clamp by vw). WRONG + right-ear knocking unchanged.
 - **Files:** `components/ScreamGate.tsx`, `components/scream-gate.css`.
+
+### 2026-11-11 — About rebuilt as "File Nº 01"; glass dock; web fonts restored
+- **What:** (1) `About.tsx` / `about.css` rewritten from scratch (`ab-*`; the night-sky
+  `ad-*` page is gone). Black-and-white print piece, paper → charcoal: poster (ghost
+  BHAVITH, cut-out portrait, handwritten ME, name badge, pills, education/focus/skills),
+  contact sheet of pinned frames + typed note, live ASCII portrait with the "definition"
+  bio and toolkit marquees, hobby rows with a cursor-following frame, link sign-off.
+  (2) Dock is smoked frosted glass and always visible on every page; the tuck/hot-zone
+  behaviour was removed. (3) Google Fonts now load from `<head>` in `app/layout.tsx`.
+- **Why:** user wanted About redone full-width from references (cut-out poster, pinned
+  photo board, Swiss grain poster, ASCII figure, film contact sheet). The fonts fix: the
+  `@import url(fonts.googleapis…)` in `globals.css` was silently dropped by the bundler,
+  so the deployed site had none of its typefaces.
+- **Files:** `components/sections/About.tsx`, `components/sections/about.css`,
+  `components/DockNav.tsx`, `app/globals.css` (dock block, import removed), `app/layout.tsx`,
+  `public/images/about/portrait-cut.webp` (OpenCV GrabCut of `about-photo.jpg`).
+- **Placeholders:** frames use generated `<Abstract />` art — give a `FRAMES` entry a `src`
+  to use a real photo. Bio, note and "definition" copy are drafts for Bhavith to correct.
+
+### 2026-11-11 — About pass 2: halftone portrait, film strip, adaptive dock
+- **What:** Poster: Education/Focus/Skills columns removed; the cut-out photo is drawn as a
+  live halftone (`Halftone`, canvas — dots grow in, lean from the cursor, scatter on scroll);
+  right side is a paper tab + typed red note. The pinned photo board is replaced by `Strip`,
+  a pinned roll of film that runs sideways on scroll, using Bhavith's six photos
+  (`public/images/about/*.webp`, converted from the root `images/` folder; grayscale, colour
+  on hover). The dark half (`Dark`) rises over the paper as a dome (scroll-driven clip-path).
+  Marquee rows skew with scroll speed. "Cooking" added to Off the clock; the playlists row
+  shows the dog-in-headphones photo. Dock: single glass pill, lucide icons, sliding active
+  pill (`layoutId`), and it reads what is underneath to switch light/dark (`data-dock-tone`
+  on a section overrides the auto-detect).
+- **Gotcha:** Turbopack dev kept serving a stale `globals.css` after the dock rewrite; a
+  trivial edit to the file made it reload.
+- **Files:** `components/sections/About.tsx`, `about.css`, `components/DockNav.tsx`,
+  `app/globals.css`, `public/images/about/`.
+
+### 2026-11-11 — Luca: photo sphere; About trims
+- **What:** `/luca` is now `LucaDome` — 100 photos of Luca on a CSS-3D sphere filling the
+  screen (drag with inertia, cursor lean, idle sway, wheel zoom, hover lift, click to open
+  full size with arrow-key navigation). Photos were picked from `~/Documents/luca` (289
+  files → one per scene, sharpest of each burst; no screenshots/collages, none showing other
+  people's faces) and exported to `public/images/luca/{t,f}/NNN.webp` with the manifest in
+  `lib/lucaPhotos.ts`. The Library's Luca book now opens `/luca` directly instead of the
+  liminal 404. The old placeholder dossier on `/luca` was removed.
+  About: removed film markings, paper tab, row numbers, strip captions/counter, the toolkit
+  marquees, the Build/Break/Fix/Repeat line and the Lego row; hover card only shows for
+  hobbies with a real `src`; palette now borrows the home hero (navy / ember / cream).
+- **Files:** `components/LucaDome.tsx`, `components/luca-dome.css`, `app/luca/page.tsx`,
+  `lib/lucaPhotos.ts`, `components/sections/Library.tsx`, `components/sections/About.tsx`,
+  `components/sections/about.css`.
+
+### 2026-11-11 — Luca: sphere replaced by a curved photo wall; Library arrow
+- **What:** `LucaDome` removed. `components/LucaWall.tsx` + `luca-wall.css`: 175 photos (no
+  repeats) as an endless, wrapping masonry wall that fills the screen. Drag with throw and
+  settle, wheel/trackpad pans, idle drift. Depth: tiles curve around the viewer, the wall
+  leans toward the cursor and into a throw, and sinks back while held. Hover is a plain pop
+  (no border, nothing dims). Click opens full size; arrows step, Esc closes.
+  Library: `LucaPointer` draws an animated arrow + "this one opens" under the Luca book.
+- **Files:** `components/LucaWall.tsx`, `components/luca-wall.css`, `app/luca/page.tsx`,
+  `lib/lucaPhotos.ts`, `public/images/luca/`, `components/sections/Library.tsx`, `app/globals.css`.

@@ -1,0 +1,164 @@
+/* ═══ Luca — the photo wall (lw-*) ═════════════════════════════════ */
+.lw-stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #070f1c;
+  color: #f4ecd8;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.lw-stage[data-drag="true"] { cursor: grabbing; }
+
+/* the wall lives in 3D: JS curves the tiles and tilts the whole thing */
+.lw-stage { perspective: 1100px; perspective-origin: 50% 50%; }
+.lw-wall {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.lw-tile {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: inherit;
+  will-change: transform;
+  border-radius: 14px;
+  transform-style: preserve-3d;
+}
+@keyframes lw-in {
+  from { opacity: 0; transform: scale(0.82) translateY(26px); }
+  to { opacity: 1; transform: none; }
+}
+.lw-tile-in {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #12233b;
+  opacity: 0;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.25s ease, scale 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.25), translate 0.28s ease;
+}
+.lw-stage[data-ready="true"] .lw-tile-in { animation: lw-in 0.8s cubic-bezier(0.16, 0.9, 0.2, 1) both; }
+.lw-tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* hover: the photo simply pops forward. No border, and nothing else dims. */
+@media (hover: hover) {
+  .lw-stage:not([data-drag="true"]) .lw-tile:hover { cursor: pointer; z-index: 2; }
+  .lw-stage:not([data-drag="true"]) .lw-tile:hover .lw-tile-in { scale: 1.13; translate: 0 0 70px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.65); }
+}
+.lw-tile:focus-visible .lw-tile-in { box-shadow: 0 0 0 3px #f4ecd8; }
+.lw-tile:focus-visible { outline: none; }
+
+/* darkens the top-left so the name reads, and the bottom so the dock sits on it */
+.lw-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 55% at 0% 0%, rgba(5, 11, 21, 0.9), rgba(5, 11, 21, 0.45) 45%, transparent 75%),
+    linear-gradient(0deg, rgba(5, 11, 21, 0.75), transparent 22%),
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(5, 11, 21, 0.55) 100%);
+}
+
+.lw-title { position: absolute; left: clamp(1.2rem, 3.2vw, 3rem); top: clamp(1rem, 3vh, 2.2rem); pointer-events: none; }
+.lw-title h1 {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(3.4rem, 8vw, 7.5rem);
+  line-height: 0.9;
+  color: #e8763f;
+  text-shadow: 0 4px 30px rgba(4, 9, 18, 0.8);
+}
+.lw-title p {
+  margin-top: 0.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 12px rgba(4, 9, 18, 0.9);
+}
+.lw-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5.4rem;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: rgba(244, 236, 216, 0.85);
+  text-shadow: 0 2px 12px rgba(4, 9, 18, 0.95);
+  pointer-events: none;
+}
+.lw-stage[data-open="true"] .lw-title,
+.lw-stage[data-open="true"] .lw-hint { opacity: 0; transition: opacity 0.3s; }
+
+/* opened photo */
+.lw-light {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(5, 10, 19, 0.84);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  cursor: zoom-out;
+}
+.lw-photo {
+  position: fixed;
+  margin: 0;
+  overflow: hidden;
+  background: #12233b;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.7);
+  cursor: default;
+}
+.lw-photo-in { position: absolute; inset: 0; }
+.lw-photo-in img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+.lw-nav, .lw-close {
+  position: fixed;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 236, 216, 0.25);
+  background: rgba(20, 30, 48, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #f4ecd8;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.lw-nav:hover, .lw-close:hover { background: #e0622b; color: #0b1a2e; transform: scale(1.08); }
+.lw-nav { top: 50%; margin-top: -1.5rem; }
+.lw-prev { left: clamp(0.8rem, 2.5vw, 2.5rem); }
+.lw-next { right: clamp(0.8rem, 2.5vw, 2.5rem); }
+.lw-close { top: clamp(0.8rem, 2.5vh, 2rem); right: clamp(0.8rem, 2.5vw, 2.5rem); font-size: 1.6rem; }
+
+@media (max-width: 700px) {
+  .lw-nav { top: auto; bottom: 5.4rem; margin: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lw-stage[data-ready="true"] .lw-tile-in { animation: none; opacity: 1; }
+}

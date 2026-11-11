@@ -202,6 +202,48 @@ function FoilRule({ color, opacity = 0.55 }: { color: string; opacity?: number }
   );
 }
 
+/* ─── A hand-drawn arrow under the Luca book: the one book that opens ───
+   The shelf scrolls sideways (and so clips anything hung below a book), so
+   the arrow lives in the shelf's wrapper and follows the book's position. */
+function LucaPointer({ wrap }: { wrap: React.RefObject<HTMLDivElement | null> }) {
+  const [x, setX] = useState<number | null>(null);
+
+  useEffect(() => {
+    const el = wrap.current;
+    if (!el) return;
+    const shelf = el.querySelector<HTMLElement>(".lib-shelf");
+    const book = el.querySelector<HTMLElement>('a[href="/luca"]');
+    if (!shelf || !book) return;
+    const place = () => {
+      const w = el.getBoundingClientRect();
+      const b = book.getBoundingClientRect();
+      const cx = b.left + b.width / 2 - w.left;
+      setX(cx > 20 && cx < w.width - 20 ? cx : null);   // hide once the book scrolls off the shelf
+    };
+    place();
+    shelf.addEventListener("scroll", place, { passive: true });
+    window.addEventListener("resize", place);
+    const ro = new ResizeObserver(place);
+    ro.observe(el);
+    return () => {
+      shelf.removeEventListener("scroll", place);
+      window.removeEventListener("resize", place);
+      ro.disconnect();
+    };
+  }, [wrap]);
+
+  if (x === null) return null;
+  return (
+    <div className="lib-pointer" style={{ left: x }} aria-hidden="true">
+      <svg viewBox="0 0 60 64" className="lib-pointer-arrow">
+        <path className="lib-pointer-line" d="M16 60 C 38 56, 46 38, 30 9" />
+        <path className="lib-pointer-head" d="M18 22 L29 7 L43 19" />
+      </svg>
+      <span className="lib-pointer-note">this one opens</span>
+    </div>
+  );
+}
+
 /* ─── Spine Book (project books — narrow vertical spine) ─────── */
 function SpineBook({
   href, title, context, award, w, h, gradient, foil, mb, volume, lean = 0, onActivate, onOpen,
@@ -571,12 +613,14 @@ export default function Library() {
   const sectionRef = useRef<HTMLElement>(null);
   const lifeWrapRef = useRef<HTMLDivElement>(null);
   const [note, setNote] = useState<(Quote & { x: number }) | null>(null);
-  // The Horror book plays the scare, then opens. Every other book drops
+  // The Horror book plays the scare, then opens. Luca's book opens his
+  // photo sphere directly. Every other book drops
   // you in a liminal space and brings you back here. Modifier-clicks (new
   // tab) still open the real page.
   const [gate, setGate] = useState<{ mode: "scream" | "liminal"; href?: string } | null>(null);
   const openBook = (href: string, e: React.MouseEvent<HTMLElement>) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    if (href === "/luca") return;          // Luca's book just opens: let the link through
     e.preventDefault();
     setGate(href === "/horror" ? { mode: "scream", href } : { mode: "liminal" });
   };
@@ -674,6 +718,7 @@ export default function Library() {
 
         {/* ── Life shelf ── */}
         <div className="reveal" ref={lifeWrapRef} style={{ position: "relative" }}>
+          <LucaPointer wrap={lifeWrapRef} />
           <div className="sb-shelf lib-shelf">
             {lifeMeta.map(b => (
               <SpineBook

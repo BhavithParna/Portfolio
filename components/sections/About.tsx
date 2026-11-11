@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -22,61 +23,69 @@ import {
 import "./about.css";
 
 /*
-  About — "After Dark".
+  About — "File Nº 01".
 
-  The home Hero is a dusk sky over orange-lit clouds. This page is the night
-  that follows it. The whole page is one continuous sky whose colour is bound
-  to scroll (dusk → deep night → the first orange of dawn), and the Hero's
-  clouds are carried in as parallax at both ends so the two screens read as
-  one place at two hours.
+  A black-and-white print piece that starts on paper and ends on charcoal.
+  References: a cut-out editorial poster (giant ghost name, handwritten ME,
+  name badge, pill tags), a pinned photo board with typewriter notes, a
+  Swiss-type grain poster, an ASCII-art figure on dark, and a film contact
+  sheet with handwriting over it.
 
-  Stations along the night, top to bottom:
-    1. Opening       — "ABOUT / me" wordmark in the Hero's own type.
-    2. Exhibit A     — pinned Polaroid + the lead paragraph lit word by word,
-                       with the facts strip (year, school, degree…) beneath.
-    3. Constellation — pinned sky; the things I'd be doing are the seven
-                       stars of the Big Dipper, drifting with the cursor,
-                       flaring on hover, joined up as you scroll.
-    4. Dawn          — CV / GitHub / LinkedIn as giant hover-fill rows.
+  Top to bottom:
+    1. Poster   — paper. Ghost wordmark, the portrait as a live halftone
+                  (dots scatter as you scroll away), ME, badge, typed note.
+    2. Strip    — paper. A pinned roll of film that runs sideways as you scroll.
+    3. Ascii    — charcoal, rising over the paper as a dome. The portrait in
+                  characters, the "definition" bio, the toolkit as marquees.
+    4. OffClock — hobbies as full-width rows; a frame follows the cursor.
+    5. SignOff  — links.
+
+  Picture slots are generated abstract artwork (<Abstract />) until real
+  photos arrive: give a SHOTS or HOBBIES entry a `src` to use one.
 
   The stage renders this inside `.scene` (an overflow:auto box), so every
   useScroll here is bound to that element via ScrollBox, not the window.
 */
 
-/* ─── scroll container plumbing ──────────────────────────────────── */
 const ScrollBox = createContext<RefObject<HTMLElement | null>>({ current: null });
 const useScrollBox = () => useContext(ScrollBox);
 
 /* ─── content ─────────────────────────────────────────────────────── */
-const LEAD =
-  "Hey, I'm Bhavith — a fourth-year Biomedical Engineering student who builds things, anywhere from Lego sets to BCI drone controllers, and everything chaotic in between.";
+const PORTRAIT = "/images/about/portrait-cut.webp";
+const EMAIL = "bhavithparna6@gmail.com";
 
-const FACTS: { k: string; v: string }[] = [
-  { k: "status", v: "Year 4 of 4" },
-  { k: "school", v: "B.V. Raju Inst. of Tech." },
-  { k: "degree", v: "B.Tech BME · '27" },
-  { k: "based", v: "Hyderabad, TG" },
-  { k: "focus", v: "Neurotech · BCI" },
+const PILLS = ["Biomedical engineer", "Neurotech · BCI", "Year 4 of 4", "Hyderabad, IN", EMAIL];
+
+const BIO =
+  "I'm Bhavith, a fourth-year biomedical engineering student in Hyderabad. I build things that sit between people and machines: a drone you steer with brain signals, a rehab game for kids with cerebral palsy. It started with Lego. It never really stopped.";
+
+/* The roll of film. `src` swaps the generated artwork for a real photo. */
+type Shot = { v: number; tall?: boolean; src?: string; alt?: string };
+const A = "/images/about/";
+const SHOTS: Shot[] = [
+  { v: 0, tall: true, src: A + "bci-headset.webp", alt: "A 3D-printed EEG headset frame with an OpenBCI board wired to it" },
+  { v: 1, src: A + "smart-helmet.webp", alt: "Bhavith wearing a helmet with sensor boards and wiring mounted on the side" },
+  { v: 2, tall: true, src: A + "breadboard-lcd.webp", alt: "An Arduino, an LCD and a breadboard joined by a tangle of jumper wires" },
+  { v: 3, tall: true, src: A + "reaction-timer.webp", alt: "Hands holding a clear box with a lit LCD reading Trial 2 of 10" },
+  { v: 4, src: A + "sensor-breadboard.webp", alt: "A breadboard with a gas sensor and glowing red LEDs on a desk" },
+  { v: 5, tall: true, src: A + "dog-headphones.webp", alt: "A curly brown dog wearing headphones" },
 ];
 
-/* Things I'd be doing, as the seven stars of the Big Dipper (Ursa Major),
-   handle tip to bowl. Positions are % of the sky box, laid out from the
-   real asterism; the order is the order the line is drawn in; `depth` is
-   how much a star drifts with the cursor (farther stars move less). */
-const STARS = [
-  { x: 7,  y: 30, r: 1.2, depth: 0.6, side: "above", star: "Alkaid", name: "building Lego",            note: "still. no plans to stop." },
-  { x: 21, y: 21, r: 1.1, depth: 1.0, side: "below", star: "Mizar",  name: "basketball",               note: "pick-up games, questionable ankles" },
-  { x: 34, y: 27, r: 1.3, depth: 0.4, side: "above", star: "Alioth", name: "making playlists",         note: "nobody asked. everybody gets one." },
-  { x: 47, y: 36, r: 0.9, depth: 1.0, side: "right", star: "Megrez", name: "music, too loud",          note: "the lumineers, on repeat" },
-  { x: 51, y: 66, r: 1.1, depth: 0.7, side: "below", star: "Phecda", name: "horror films at 2am",      note: "the scarier the better" },
-  { x: 74, y: 72, r: 1.2, depth: 0.5, side: "below", star: "Merak",  name: "driving around",           note: "no destination, good playlist" },
-  { x: 72, y: 38, r: 1.4, depth: 0.9, side: "above", star: "Dubhe",  name: "drinking a lot of coffee", note: "№ 3 is a lifestyle" },
+type Hobby = { name: string; note: string; v: number; src?: string };
+const HOBBIES: Hobby[] = [
+  { name: "Cooking",          note: "edible. usually.",                   v: 6 },
+  { name: "Basketball",       note: "pick-up games, questionable ankles", v: 0 },
+  { name: "Making playlists", note: "nobody asked. everybody gets one.",  v: 2, src: A + "dog-headphones.webp" },
+  { name: "Horror films",     note: "2am, the scarier the better",        v: 5 },
+  { name: "Driving around",   note: "no destination, good playlist",      v: 1 },
+  { name: "Too much coffee",  note: "№ 3 is a lifestyle",                 v: 3 },
 ];
 
 const LINKS = [
-  { label: "Download CV", meta: "PDF · ONE PAGE", href: "/bhavith-parna-cv.pdf", download: true },
-  { label: "GitHub", meta: "@BHAVITHPARNA", href: "https://github.com/BhavithParna" },
-  { label: "LinkedIn", meta: "SAY HELLO", href: "https://www.linkedin.com/in/bhavith-parna-2920b0178/" },
+  { label: "Download CV", meta: "PDF", href: "/bhavith-parna-cv.pdf", download: true },
+  { label: "GitHub", meta: "@BhavithParna", href: "https://github.com/BhavithParna" },
+  { label: "LinkedIn", meta: "say hello", href: "https://www.linkedin.com/in/bhavith-parna-2920b0178/" },
+  { label: "Email", meta: EMAIL, href: `mailto:${EMAIL}` },
 ];
 
 /* ─── root ────────────────────────────────────────────────────────── */
@@ -84,356 +93,712 @@ export default function About() {
   const rootRef = useRef<HTMLElement>(null);
   const [box, setBox] = useState<HTMLElement | null>(null);
 
-  // The stage's `.scene` is the thing that scrolls — bind every scroll hook to it.
   useLayoutEffect(() => {
     setBox(rootRef.current?.closest<HTMLElement>(".scene") ?? null);
   }, []);
   const boxRef = useMemo<RefObject<HTMLElement | null>>(() => ({ current: box }), [box]);
 
   return (
-    <section id="about" className="ad-page" ref={rootRef}>
+    <section id="about" className="ab-page" ref={rootRef}>
       <ScrollBox.Provider value={boxRef}>
-        {box && <Night />}
+        {box && (
+          <>
+            <div className="ab-grain" aria-hidden="true" />
+            <Poster />
+            <Strip />
+            <Dark>
+              <Ascii />
+              <OffClock />
+              <SignOff />
+            </Dark>
+          </>
+        )}
       </ScrollBox.Provider>
     </section>
   );
 }
 
-function Night() {
-  const box = useScrollBox();
-  const { scrollYProgress } = useScroll({ container: box });
-  const progress = useSpring(scrollYProgress, { stiffness: 160, damping: 30, mass: 0.3 });
-
-  return (
-    <>
-      <Sky progress={progress} />
-      <Opening />
-      <Exhibit />
-      <Constellation />
-      <Dawn />
-    </>
-  );
+/* cursor position across an element as -1..1 springs */
+function useCursor() {
+  const reduce = useReducedMotion();
+  const rx = useMotionValue(0);
+  const ry = useMotionValue(0);
+  const mx = useSpring(rx, { stiffness: 50, damping: 18 });
+  const my = useSpring(ry, { stiffness: 50, damping: 18 });
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (reduce) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    rx.set(((e.clientX - r.left) / r.width) * 2 - 1);
+    ry.set(((e.clientY - r.top) / r.height) * 2 - 1);
+  };
+  const onMouseLeave = () => { rx.set(0); ry.set(0); };
+  return { mx, my, onMouseMove, onMouseLeave };
 }
 
-/* ─── the sky: colour + stars — one sticky layer under everything ─────── */
-function Sky({ progress }: { progress: MotionValue<number> }) {
-  /* Perf: the sky is two cheap layers. The base is a solid colour (one
-     repaint of a flat fill), the dawn glow is a fixed gradient whose
-     *opacity* is animated (compositor only). No per-frame gradient strings. */
-  const sky = useTransform(
-    progress,
-    [0, 0.3, 0.7, 0.9, 1],
-    ["#0e2238", "#060d18", "#07111f", "#2a1d2b", "#5a2d26"],
-  );
-  const duskGlow = useTransform(progress, [0, 0.3], [0.35, 0]);
-  const dawnGlow = useTransform(progress, [0.8, 1], [0, 1]);
-  const starsOpacity = useTransform(progress, [0, 0.25, 0.8, 1], [0.25, 1, 1, 0]);
-
-  return (
-    <motion.div className="ad-sky" style={{ backgroundColor: sky }} aria-hidden="true">
-      <motion.div className="ad-glow ad-glow-dusk" style={{ opacity: duskGlow }} />
-      <motion.div className="ad-glow ad-glow-dawn" style={{ opacity: dawnGlow }} />
-      <motion.div className="ad-stars" style={{ opacity: starsOpacity }} />
-      <motion.div className="ad-stars ad-stars-b" style={{ opacity: starsOpacity }} />
-      <div className="ad-grain" />
-    </motion.div>
-  );
-}
-
-/* ─── 1. opening ──────────────────────────────────────────────────── */
-function Opening() {
+/* ─── 1. poster ───────────────────────────────────────────────────── */
+function Poster() {
   const box = useScrollBox();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start start", "end start"] });
-  const cloudY = useTransform(scrollYProgress, [0, 1], ["0%", "28%"]);
-  const cloudScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
-  const titleY = useTransform(scrollYProgress, [0, 1], ["0%", "-35%"]);
-  const titleO = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  const { mx, my, onMouseMove, onMouseLeave } = useCursor();
 
-  const about = "ABOUT".split("");
+  const ghostX = useTransform([mx, scrollYProgress] as MotionValue<number>[], ([m, s]: number[]) => `${m * -1.6 - s * 16}%`);
+  const ghostScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
+  const badgeX = useTransform(mx, (v) => v * -22);
+  const badgeY = useTransform([my, scrollYProgress] as MotionValue<number>[], ([m, s]: number[]) => m * -14 - s * 260);
+  const badgeRot = useTransform(scrollYProgress, [0, 1], [0, -38]);
+  const meY = useTransform(scrollYProgress, [0, 1], [0, -220]);
+  const meRot = useTransform(scrollYProgress, [0, 1], [0, -14]);
+  const sideY = useTransform(scrollYProgress, [0, 1], [0, -110]);
+  const sideO = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
-    <div className="ad-open" ref={ref}>
-      <motion.div className="ad-open-title" style={{ y: titleY, opacity: titleO }}>
-        <h1 className="ad-wordmark" aria-label="About me">
-          <span className="ad-wm-row">
-            {about.map((ch, i) => (
-              <span className="ad-wm-main ad-letter" style={{ animationDelay: `${0.12 + i * 0.06}s` }} key={i}>
-                <span>{ch}</span>
-              </span>
-            ))}
-            <span className="ad-wm-echo" aria-hidden="true">ABOUT</span>
-          </span>
-          <span className="ad-wm-row ad-wm-row-2">
-            <span className="ad-wm-echo ad-wm-echo-2" aria-hidden="true">me</span>
-            <span className="ad-wm-main ad-wm-italic ad-letter" style={{ animationDelay: "0.55s" }}>
-              <span>me</span>
-            </span>
-          </span>
-        </h1>
-        <p className="ad-open-sub ad-enter" style={{ animationDelay: "0.9s" }}>
-          Biomedical engineer
-        </p>
+    <div className="ab-poster" data-dock-tone="light" ref={ref} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
+
+      <motion.div className="ab-ghost" style={{ x: ghostX, scale: ghostScale }} aria-hidden="true">
+        {"BHAVITH".split("").map((c, i) => (
+          <span key={i} style={{ animationDelay: `${0.05 + i * 0.05}s` }}>{c}</span>
+        ))}
       </motion.div>
 
-      <motion.div className="ad-clouds" style={{ y: cloudY, scale: cloudScale }} aria-hidden="true" />
+      <div className="ab-poster-grid">
+        <div className="ab-col-l">
+          <motion.h1 className="ab-me" aria-label="About me" style={{ y: meY, rotate: meRot }}><span>ME</span></motion.h1>
+          <motion.ul className="ab-pills" style={{ y: sideY, opacity: sideO }}>
+            {PILLS.map((p, i) => (
+              <li key={p} className="ab-pop" style={{ animationDelay: `${0.75 + i * 0.07}s` }}>{p}</li>
+            ))}
+          </motion.ul>
+        </div>
 
-      <div className="ad-scrollcue ad-enter" style={{ animationDelay: "1.3s" }}>
-        <span className="ad-hand">scroll — the night is long</span>
-        <span className="ad-cue-line" />
-      </div>
-    </div>
-  );
-}
-
-/* ─── 2. exhibit A: pinned Polaroid + scroll-lit lead ─────────────── */
-function Exhibit() {
-  const box = useScrollBox();
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start end", "end start"] });
-
-  const rot = useTransform(scrollYProgress, [0, 0.5, 1], [-14, -3, 6]);
-  const py = useTransform(scrollYProgress, [0, 1], ["12%", "-12%"]);
-  const ps = useTransform(scrollYProgress, [0, 0.45, 1], [0.86, 1, 1.04]);
-  const words = useMemo(() => LEAD.split(" "), []);
-
-  return (
-    <div className="ad-exhibit" ref={ref}>
-      <div className="ad-exhibit-sticky">
-        <div className="ad-exhibit-grid">
-          <motion.figure className="ad-polaroid" style={{ rotate: rot, y: py, scale: ps }}>
-            <span className="ad-tape" aria-hidden="true" />
-            <div className="ad-polaroid-photo">
-              <img src="/images/about-photo.jpg" alt="Bhavith after dark, mid-build" />
+        <div className="ab-portrait">
+          <Halftone progress={scrollYProgress} />
+          <motion.div className="ab-badge-wrap" style={{ x: badgeX, y: badgeY, rotate: badgeRot }}>
+            <div className="ab-badge">
+              <b>HELLO!</b>
+              <i>my name is</i>
+              <strong>BHAVITH</strong>
             </div>
-            <figcaption className="ad-hand">exhibit A — after dark</figcaption>
-            <span className="ad-stamp" aria-hidden="true">OPEN TO<br />OPPORTUNITIES</span>
-          </motion.figure>
+          </motion.div>
+        </div>
 
-          <div className="ad-lead-wrap">
-            <p className="ad-lead">
-              {words.map((w, i) => (
-                <Word key={i} progress={scrollYProgress} index={i} total={words.length}>
-                  {w}
-                </Word>
-              ))}
-            </p>
-            <dl className="ad-facts">
-              {FACTS.map((f) => (
-                <div className="ad-fact" key={f.k}>
-                  <dt>[ {f.k} ]</dt>
-                  <dd>{f.v}</dd>
-                </div>
-              ))}
-            </dl>
+        <motion.div className="ab-col-r" style={{ y: sideY, opacity: sideO }}>
+          <div className="ab-typed ab-in" style={{ animationDelay: "1.2s" }}>
+            <p>{BIO}</p>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Word({
-  children,
-  progress,
-  index,
-  total,
-}: {
-  children: string;
-  progress: MotionValue<number>;
-  index: number;
-  total: number;
-}) {
-  // Light the words across the middle 50% of the section's travel.
-  const start = 0.22 + (index / total) * 0.5;
-  const end = start + 0.5 / total;
-  const opacity = useTransform(progress, [start, end], [0.14, 1]);
-  const y = useTransform(progress, [start, end], [6, 0]);
-  const hot = /Bhavith|BCI|Lego|chaotic/.test(children);
-  return (
-    <>
-      <motion.span className={hot ? "ad-word ad-word-hot" : "ad-word"} style={{ opacity, y }}>
-        {children}
-      </motion.span>{" "}
-    </>
-  );
-}
-
-/* ─── 3. constellation: things I'd be doing, drawn by scroll ──────── */
-function Constellation() {
-  const box = useScrollBox();
-  const reduce = useReducedMotion();
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start start", "end end"] });
-  const progress = useSpring(scrollYProgress, { stiffness: 70, damping: 22, mass: 0.5 });
-
-  // the line is drawn across the middle of the pinned travel
-  const draw = useTransform(progress, (p) => Math.min(1, Math.max(0, (p - 0.1) / 0.72)));
-  const titleO = useTransform(progress, (p) => (p < 0.08 ? 1 : Math.max(0, 1 - (p - 0.08) / 0.18)));
-  const titleY = useTransform(progress, (p) => `${Math.min(1, Math.max(0, (p - 0.08) / 0.18)) * -24}px`);
-
-  // cursor parallax: -1..1 across the sticky box, eased with a spring
-  const rawX = useMotionValue(0);
-  const rawY = useMotionValue(0);
-  const mx = useSpring(rawX, { stiffness: 40, damping: 18 });
-  const my = useSpring(rawY, { stiffness: 40, damping: 18 });
-  const onMove = (e: React.MouseEvent) => {
-    if (reduce) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    rawX.set(((e.clientX - r.left) / r.width) * 2 - 1);
-    rawY.set(((e.clientY - r.top) / r.height) * 2 - 1);
-  };
-  const onLeave = () => {
-    rawX.set(0);
-    rawY.set(0);
-  };
-
-  // handle → bowl, then the bowl closes back on Megrez
-  const points = [...STARS, STARS[3]].map((s) => `${s.x * 10},${s.y * 6}`).join(" ");
-
-  return (
-    <div className="ad-constel" ref={ref}>
-      <div className="ad-constel-sticky" onMouseMove={onMove} onMouseLeave={onLeave}>
-        <motion.div className="ad-constel-title" style={{ opacity: titleO, y: titleY }}>
-          <div className="ad-eyebrow">OFF THE CLOCK</div>
-          <h2 className="ad-constel-h">
-            Things I&apos;d <em>be</em> doing
-          </h2>
         </motion.div>
-
-        <div className="ad-skybox">
-          <svg className="ad-constel-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="ad-line-grad" x1="0" x2="1" y1="0" y2="0">
-                <stop offset="0" stopColor="#f4ecd8" stopOpacity="0.5" />
-                <stop offset="1" stopColor="#e8763f" stopOpacity="0.9" />
-              </linearGradient>
-            </defs>
-            <motion.polyline points={points} style={{ pathLength: draw }} />
-          </svg>
-          {STARS.map((s, i) => (
-            <Star key={s.name} star={s} index={i} total={STARS.length} draw={draw} mx={mx} my={my} />
-          ))}
-          {!reduce && <ShootingStars />}
-        </div>
       </div>
     </div>
   );
 }
 
-function Star({
-  star,
-  index,
-  total,
-  draw,
-  mx,
-  my,
-}: {
-  star: (typeof STARS)[number];
-  index: number;
-  total: number;
-  draw: MotionValue<number>;
-  mx: MotionValue<number>;
-  my: MotionValue<number>;
-}) {
-  // a star lights the moment the line reaches it
-  const at = index / (total - 1);
-  const lit = useTransform(draw, (d) => Math.min(1, Math.max(0, (d - at + 0.06) / 0.08)));
-  const scale = useTransform(lit, (l) => 0.2 + l * 0.8);
-  const labelY = useTransform(lit, (l) => `${(1 - l) * 10}px`);
-  // parallax drift, scaled by depth
-  const dx = useTransform(mx, (v) => v * 22 * star.depth);
-  const dy = useTransform(my, (v) => v * 16 * star.depth);
-  const [hot, setHot] = useState(false);
+/* The portrait as a halftone print: one ink dot per cell, sized by how dark
+   the photo is there. Dots grow in from the centre, lean away from the
+   cursor, and blow apart as the poster scrolls off. */
+function Halftone({ progress }: { progress: MotionValue<number> }) {
+  const reduce = useReducedMotion();
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const canvas = canvasRef.current;
+    if (!wrap || !canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const PAD = 0.22;            // canvas overhang on each side, as a fraction of the box
+    let alive = true;
+    let raf = 0;
+    let start = 0;
+    let lastS = -1;
+    let force = true;
+    let n = 0;                   // dot count
+    let N = 0;                   // grid columns
+    let px = new Float32Array(0), py = px, rad = px, ax = px, ay = px, delay = px;
+    const mouse = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
+
+    const img = new Image();
+    img.src = PORTRAIT;
+
+    const sample = () => {
+      if (!img.naturalWidth) return;
+      N = wrap.clientWidth < 420 ? 66 : 118;
+      const off = document.createElement("canvas");
+      off.width = N; off.height = N;
+      const o = off.getContext("2d", { willReadFrequently: true });
+      if (!o) return;
+      o.drawImage(img, 0, 0, N, N);
+      const d = o.getImageData(0, 0, N, N).data;
+      const X: number[] = [], Y: number[] = [], R: number[] = [], AX: number[] = [], AY: number[] = [], D: number[] = [];
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          const i = (r * N + c) * 4;
+          const a = d[i + 3] / 255;
+          if (a < 0.4) continue;
+          // stretch the tones so a flash-lit face still prints as dots
+          const dark = Math.min(1, Math.max(0, (1 - d[i] / 255 - 0.04) / 0.72));
+          const size = 0.16 + 0.84 * Math.pow(dark, 0.85);
+          const x = (c + (r % 2 ? 0.5 : 0)) / N, y = (r + 0.5) / N;   // offset rows, like a real screen
+          const ang = Math.atan2(y - 0.55, x - 0.5) + (Math.random() - 0.5) * 1.2;
+          const mag = 0.35 + Math.random() * 0.9;
+          X.push(x); Y.push(y); R.push(size);
+          AX.push(Math.cos(ang) * mag); AY.push(Math.sin(ang) * mag - 0.25);
+          D.push(Math.hypot(x - 0.5, y - 0.45) * 0.9 + Math.random() * 0.25);
+        }
+      }
+      n = X.length;
+      px = Float32Array.from(X); py = Float32Array.from(Y); rad = Float32Array.from(R);
+      ax = Float32Array.from(AX); ay = Float32Array.from(AY); delay = Float32Array.from(D);
+      force = true;
+    };
+
+    const draw = (intro: number, s: number) => {
+      const W = wrap.clientWidth;
+      const pad = W * PAD;
+      const full = W + pad * 2;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      if (canvas.width !== Math.round(full * dpr)) {
+        canvas.width = canvas.height = Math.round(full * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, full, full);
+      ctx.fillStyle = "#0e2238";
+      const cell = W / N;
+      const R = cell * 7.5, R2 = R * R;
+      const spread = s * s * W * 1.5;
+      const shrink = 1 - s * 0.55;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        let g = (intro * 1.75 - delay[i]) / 0.5;
+        if (g <= 0) continue;
+        if (g > 1) g = 1;
+        g = 1 - (1 - g) * (1 - g);
+        let x = pad + px[i] * W + ax[i] * spread;
+        let y = pad + py[i] * W + ay[i] * spread;
+        const dx = x - mouse.x, dy = y - mouse.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < R2 && d2 > 0.01) {
+          const dd = Math.sqrt(d2);
+          const f = (1 - dd / R); 
+          x += (dx / dd) * f * f * cell * 3.2;
+          y += (dy / dd) * f * f * cell * 3.2;
+        }
+        const r = rad[i] * cell * 0.66 * g * shrink;
+        if (r < 0.3) continue;
+        ctx.moveTo(x + r, y);
+        ctx.arc(x, y, r, 0, 6.2832);
+      }
+      ctx.fill();
+    };
+
+    const loop = (now: number) => {
+      if (!alive) return;
+      raf = requestAnimationFrame(loop);
+      if (!n) return;
+      if (!start) start = now;
+      const intro = Math.min(1, (now - start) / 1700);
+      const s = Math.min(1, Math.max(0, progress.get()));
+      const mdx = mouse.tx - mouse.x, mdy = mouse.ty - mouse.y;
+      const moving = Math.abs(mdx) + Math.abs(mdy) > 0.4;
+      if (moving) { mouse.x += mdx * 0.2; mouse.y += mdy * 0.2; }
+      if (!force && intro >= 1 && !moving && s === lastS) return;
+      if (s >= 1 && lastS >= 1 && !force) return;
+      force = intro < 1;
+      lastS = s;
+      draw(intro, s);
+    };
+
+    const ready = () => {
+      sample();
+      if (reduce) draw(1, 0);
+      else raf = requestAnimationFrame(loop);
+    };
+    if (img.complete && img.naturalWidth) ready(); else img.onload = ready;
+
+    const ro = new ResizeObserver(() => { sample(); if (reduce) draw(1, 0); });
+    ro.observe(wrap);
+    const onMove = (e: MouseEvent) => {
+      const b = canvas.getBoundingClientRect();
+      mouse.tx = e.clientX - b.left; mouse.ty = e.clientY - b.top;
+      if (mouse.x < -9000) { mouse.x = mouse.tx; mouse.y = mouse.ty; }
+    };
+    if (!reduce) window.addEventListener("mousemove", onMove, { passive: true });
+
+    return () => {
+      alive = false;
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener("mousemove", onMove);
+    };
+  }, [reduce, progress]);
 
   return (
-    <motion.div
-      className="ad-star"
-      style={{ left: `${star.x}%`, top: `${star.y}%`, x: dx, y: dy, ["--pulse" as string]: `${2.4 + index * 0.37}s` }}
-      onMouseEnter={() => setHot(true)}
-      onMouseLeave={() => setHot(false)}
-      data-hot={hot}
-      data-side={star.side}
-    >
-      <motion.span
-        className="ad-star-dot"
-        style={{ opacity: lit, scale, width: `${star.r * 14}px`, height: `${star.r * 14}px` }}
-      />
-      <motion.span className="ad-star-name" style={{ opacity: lit }}>{star.star}</motion.span>
-      <motion.span className="ad-star-label" style={{ opacity: lit, y: labelY }}>
-        <b>{star.name}</b>
-        <i className="ad-hand">{star.note}</i>
-      </motion.span>
+    <div className="ab-half" ref={wrapRef}>
+      <canvas ref={canvasRef} role="img" aria-label="Halftone portrait of Bhavith, laughing, in round sunglasses" />
+    </div>
+  );
+}
+
+/* ─── 2. the roll of film: pinned, runs sideways on scroll ────────── */
+function Strip() {
+  const box = useScrollBox();
+  const ref = useRef<HTMLDivElement>(null);
+  const reelRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start start", "end end"] });
+  const p = useSpring(scrollYProgress, { stiffness: 120, damping: 26, mass: 0.4 });
+
+  const x = useTransform(p, (v) => {
+    const reel = reelRef.current;
+    const vw = box.current?.clientWidth ?? 0;
+    return reel ? -v * Math.max(0, reel.scrollWidth - vw) : 0;
+  });
+  const titleRot = useTransform(p, [0, 1], [-5, -1]);
+
+  return (
+    <div className="ab-strip" data-dock-tone="light" ref={ref}>
+      <div className="ab-strip-sticky">
+        <div className="ab-strip-head">
+          <motion.h2
+            className="ab-scrawl ab-strip-title"
+            style={{ rotate: titleRot }}
+            initial={{ opacity: 0, clipPath: "inset(-20% 100% -20% 0)" }}
+            whileInView={{ opacity: 1, clipPath: "inset(-20% -5% -20% 0)" }}
+            viewport={{ root: box, once: true, margin: "-20% 0px" }}
+            transition={{ duration: 1.1, ease: [0.3, 0.7, 0.2, 1] }}
+          >
+            proof i was here
+          </motion.h2>
+        </div>
+
+        <motion.div className="ab-reel" ref={reelRef} style={{ x }}>
+          <div className="ab-film-band">
+            {SHOTS.map((s, i) => (
+              <figure key={i} className={s.tall ? "ab-shot ab-shot-tall" : "ab-shot"}>
+                <div className="ab-shot-art">
+                  {s.src ? <img src={s.src} alt={s.alt ?? ""} draggable={false} /> : <Abstract v={s.v} />}
+                </div>
+              </figure>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── the dark half: rises over the paper as a dome ───────────────── */
+function Dark({ children }: { children: React.ReactNode }) {
+  const box = useScrollBox();
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start end", "start start"] });
+
+  const clipPath = useTransform(scrollYProgress, (p) => {
+    const el = box.current;
+    if (reduce || !el || p >= 0.995) return "none";
+    const vw = el.clientWidth, vh = el.clientHeight;
+    const r = Math.max(vw, vh) * 0.95;
+    const sag = r - Math.sqrt(Math.max(0, r * r - (vw * vw) / 4));
+    // apex of the dome, in this element's own coordinates
+    const top = p * vh * (1 - p) - sag * p;
+    return `circle(${r}px at 50% ${top + r}px)`;
+  });
+
+  return (
+    <motion.div className="ab-dark" ref={ref} style={{ clipPath }}>
+      {children}
     </motion.div>
   );
 }
 
-/* A streak across the sky box every few seconds, from a random spot. */
-function ShootingStars() {
-  const [shot, setShot] = useState<{ id: number; x: number; y: number; len: number; ang: number } | null>(null);
-  useEffect(() => {
-    let alive = true;
-    let t: ReturnType<typeof setTimeout>;
-    const next = () => {
-      t = setTimeout(() => {
-        if (!alive) return;
-        setShot({ id: Date.now(), x: 10 + Math.random() * 70, y: 5 + Math.random() * 40, len: 160 + Math.random() * 160, ang: 18 + Math.random() * 20 });
-        next();
-      }, 2600 + Math.random() * 3200);
-    };
-    next();
-    return () => {
-      alive = false;
-      clearTimeout(t);
-    };
-  }, []);
-  if (!shot) return null;
+/* ─── abstract artwork: grainy black-and-white compositions ───────── */
+function Abstract({ v }: { v: number }) {
+  const id = useId().replace(/:/g, "");
+  const g = `g${id}`;
+  const s = `s${id}`;
+  const body = (() => {
+    switch (v % 7) {
+      case 0: // the eye
+        return (
+          <>
+            <rect width="100" height="100" fill="#e6e3dd" />
+            <circle cx="52" cy="46" r="34" fill={`url(#${s})`} />
+            <circle cx="50" cy="48" r="16" fill="#0d0d0d" />
+            <rect x="43" y="40" width="6" height="5" fill="#f2f0ea" transform="rotate(-18 46 42)" />
+            <ellipse cx="54" cy="92" rx="30" ry="4" fill="#000" opacity="0.25" />
+          </>
+        );
+      case 1: // horizon
+        return (
+          <>
+            <rect width="100" height="100" fill="#dcd9d2" />
+            <circle cx="68" cy="38" r="17" fill="#111" />
+            <rect y="58" width="100" height="42" fill="#151515" />
+            <path d="M0 58 Q25 50 48 58 T100 55 V62 H0Z" fill="#151515" />
+            <rect x="22" y="44" width="2.4" height="18" fill="#111" />
+            <circle cx="23.2" cy="42" r="3" fill="#111" />
+          </>
+        );
+      case 2: // rings
+        return (
+          <>
+            <rect width="100" height="100" fill="#141414" />
+            {[44, 36, 28, 20, 12].map((r, k) => (
+              <circle key={r} cx="50" cy="52" r={r} fill="none" stroke="#e9e6e0" strokeWidth={k % 2 ? 1 : 3} />
+            ))}
+            <circle cx="50" cy="52" r="5" fill="#e9e6e0" />
+          </>
+        );
+      case 3: // stripes + disc
+        return (
+          <>
+            <rect width="100" height="100" fill="#e6e3dd" />
+            {Array.from({ length: 12 }, (_, k) => (
+              <rect key={k} x={-40 + k * 14} y="-20" width="6" height="160" fill="#131313" transform="rotate(32 50 50)" />
+            ))}
+            <circle cx="60" cy="42" r="24" fill="#e6e3dd" />
+            <circle cx="60" cy="42" r="17" fill="#131313" />
+          </>
+        );
+      case 4: // stacked blocks
+        return (
+          <>
+            <rect width="100" height="100" fill="#d9d6cf" />
+            <rect x="14" y="60" width="34" height="26" fill="#111" />
+            <rect x="48" y="44" width="26" height="42" fill="#3a3a3a" />
+            <rect x="30" y="30" width="26" height="30" fill="#111" />
+            <path d="M56 30 A14 14 0 0 1 84 30 V44 H56Z" fill="#111" />
+            {[20, 30, 40].map((x) => <circle key={x} cx={x} cy="56" r="2.4" fill="#111" />)}
+            <rect y="86" width="100" height="14" fill="#111" />
+          </>
+        );
+      case 5: // halftone moon
+        return (
+          <>
+            <rect width="100" height="100" fill="#121212" />
+            {Array.from({ length: 11 }, (_, r) =>
+              Array.from({ length: 11 }, (_, c) => {
+                const d = Math.hypot(c - 6.2, r - 4.2);
+                const rad = Math.max(0, 3.9 - d * 0.62);
+                return rad > 0.2 ? <circle key={`${r}-${c}`} cx={5 + c * 9} cy={5 + r * 9} r={rad} fill="#ece9e3" /> : null;
+              }),
+            )}
+          </>
+        );
+      default: // signal traces
+        return (
+          <>
+            <rect width="100" height="100" fill="#e6e3dd" />
+            {[18, 34, 50, 66, 82].map((y, k) => (
+              <path
+                key={y}
+                d={`M0 ${y} H${14 + k * 6} l3 -${9 + k * 2} l4 ${20 + k * 3} l4 -${16 + k} l3 ${5 + k} H${58 + k * 4} l3 -${6 + k * 2} l3 ${12 + k * 2} l3 -6 H100`}
+                fill="none"
+                stroke="#121212"
+                strokeWidth={k === 2 ? 2.2 : 1}
+              />
+            ))}
+          </>
+        );
+    }
+  })();
+
   return (
-    <span
-      key={shot.id}
-      className="ad-shooting"
-      style={{ left: `${shot.x}%`, top: `${shot.y}%`, width: `${shot.len}px`, transform: `rotate(${shot.ang}deg)` }}
-      aria-hidden="true"
-    />
+    <svg className="ab-abstract" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <radialGradient id={s} cx="0.36" cy="0.3" r="0.8">
+          <stop offset="0" stopColor="#fbfaf6" />
+          <stop offset="0.55" stopColor="#bdbab3" />
+          <stop offset="1" stopColor="#4d4b47" />
+        </radialGradient>
+        <filter id={g} x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="1.9" numOctaves="2" seed={v + 3} result="n" />
+          <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 1.5 -0.55" result="gr" />
+          <feBlend in="SourceGraphic" in2="gr" mode="overlay" />
+        </filter>
+      </defs>
+      <g filter={`url(#${g})`}>{body}</g>
+    </svg>
   );
 }
 
-/* ─── 6. dawn: the big links ──────────────────────────────────────── */
-function Dawn() {
-  const box = useScrollBox();
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start end", "end end"] });
-  const cloudY = useTransform(scrollYProgress, [0, 1], ["40%", "0%"]);
-  const cloudO = useTransform(scrollYProgress, (p) => Math.min(1, Math.max(0, p / 0.7)));
+/* ─── 3. ascii: the portrait in characters + the definition ──────── */
+const RAMP = " .:^~!7?JY5PGB#&@";
+
+function AsciiPortrait() {
+  const reduce = useReducedMotion();
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const canvas = canvasRef.current;
+    if (!wrap || !canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let alive = true;
+    let raf = 0;
+    let visible = false;
+    let started = 0;           // timestamp the reveal began
+    let last = 0;
+    let cols = 0, rows = 0;
+    let cells: Uint8Array | null = null;   // ramp index per cell
+    let gate: Float32Array | null = null;  // reveal threshold per cell
+    const mouse = { x: -9999, y: -9999 };
+
+    const img = new Image();
+    img.src = PORTRAIT;
+
+    const sample = () => {
+      if (!img.naturalWidth) return;
+      cols = wrap.clientWidth < 520 ? 72 : 118;
+      rows = Math.round(cols * (img.naturalHeight / img.naturalWidth) * 0.5);
+      const off = document.createElement("canvas");
+      off.width = cols; off.height = rows;
+      const o = off.getContext("2d", { willReadFrequently: true });
+      if (!o) return;
+      o.drawImage(img, 0, 0, cols, rows);
+      const d = o.getImageData(0, 0, cols, rows).data;
+      cells = new Uint8Array(cols * rows);
+      gate = new Float32Array(cols * rows);
+      for (let i = 0; i < cols * rows; i++) {
+        const a = d[i * 4 + 3] / 255;
+        const lum = (d[i * 4] / 255) * a;
+        // lift the mids so the shirt and face carry weight; alpha 0 → blank
+        const t = a < 0.35 ? 0 : Math.min(1, 0.12 + Math.pow(lum, 0.8) * 1.05);
+        cells[i] = Math.round(t * (RAMP.length - 1));
+        const cy = Math.floor(i / cols) / rows;
+        gate[i] = cy * 0.7 + Math.random() * 0.3;   // resolves top to bottom, raggedly
+      }
+    };
+
+    const draw = (now: number) => {
+      if (!cells || !gate) return;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const W = wrap.clientWidth;
+      const fs = W / (cols * 0.6);
+      const lh = fs * 1.2;
+      const H = rows * lh;
+      if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        canvas.style.height = `${H}px`;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      ctx.font = `700 ${fs}px "JetBrains Mono", ui-monospace, monospace`;
+      ctx.textBaseline = "top";
+      const ink = ctx.createLinearGradient(0, 0, 0, H);   // cream at the head, cloud-peach to ember at the foot
+      ink.addColorStop(0, "#f4ecd8");
+      ink.addColorStop(0.6, "#f0b184");
+      ink.addColorStop(1, "#e0622b");
+      ctx.fillStyle = ink;
+      const cw = ctx.measureText("M").width || fs * 0.6;
+      const sx = W / (cols * cw);
+      ctx.scale(sx, 1);
+
+      const p = reduce ? 1 : Math.min(1, (now - started) / 2200);
+      const R = 5.5;
+      const mcx = mouse.x / (cw * sx), mcy = mouse.y / lh;
+      const n = RAMP.length;
+      for (let r = 0; r < rows; r++) {
+        let line = "";
+        for (let c = 0; c < cols; c++) {
+          const i = r * cols + c;
+          const v = cells[i];
+          const gt = gate[i];
+          let ch = " ";
+          if (p >= gt) {
+            ch = RAMP[v];
+            if (v) {
+              const near = Math.hypot(c - mcx, (r - mcy) * 2) < R;
+              // settling flicker, cursor scramble, and a faint idle shimmer
+              if (p - gt < 0.12 || near || Math.random() < 0.004) ch = RAMP[1 + ((Math.random() * (n - 1)) | 0)];
+            }
+          }
+          line += ch;
+        }
+        ctx.fillText(line, 0, r * lh);
+      }
+    };
+
+    const loop = (now: number) => {
+      if (!alive) return;
+      raf = requestAnimationFrame(loop);
+      if (!visible || now - last < 66) return;   // ~15fps is plenty for type
+      last = now;
+      if (!started) started = now;
+      draw(now);
+    };
+
+    const start = () => { sample(); if (reduce) { started = 1; draw(1e9); } };
+    if (img.complete && img.naturalWidth) start(); else img.onload = start;
+
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { threshold: 0.12 });
+    io.observe(wrap);
+    const ro = new ResizeObserver(() => sample());
+    ro.observe(wrap);
+    const onMove = (e: MouseEvent) => {
+      const b = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - b.left; mouse.y = e.clientY - b.top;
+    };
+    const onLeave = () => { mouse.x = mouse.y = -9999; };
+    wrap.addEventListener("mousemove", onMove);
+    wrap.addEventListener("mouseleave", onLeave);
+    if (!reduce) raf = requestAnimationFrame(loop);
+
+    return () => {
+      alive = false;
+      cancelAnimationFrame(raf);
+      io.disconnect();
+      ro.disconnect();
+      wrap.removeEventListener("mousemove", onMove);
+      wrap.removeEventListener("mouseleave", onLeave);
+    };
+  }, [reduce]);
 
   return (
-    <div className="ad-dawn" ref={ref}>
-      <motion.div className="ad-clouds ad-clouds-dawn" style={{ y: cloudY, opacity: cloudO }} aria-hidden="true" />
-      <div className="ad-dawn-inner">
-        <div className="ad-eyebrow">05:48 · FIRST LIGHT · LET&apos;S TALK</div>
-        <ul className="ad-links">
-          {LINKS.map((l, i) => (
-            <li key={l.label}>
-              <motion.a
-                href={l.href}
-                download={l.download || undefined}
-                target={l.download ? undefined : "_blank"}
-                rel={l.download ? undefined : "noopener noreferrer"}
-                className="ad-link"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ root: box, once: true, margin: "-10% 0px" }}
-                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.2, 0.8, 0.25, 1] }}
-              >
-                <span className="ad-link-label">{l.label}</span>
-                <span className="ad-link-meta">{l.meta}</span>
-                <span className="ad-link-arrow" aria-hidden="true">{l.download ? "↓" : "↗"}</span>
-                <span className="ad-link-fill" aria-hidden="true" />
-              </motion.a>
-            </li>
-          ))}
-        </ul>
+    <div className="ab-ascii-art" ref={wrapRef}>
+      <canvas ref={canvasRef} role="img" aria-label="Portrait of Bhavith drawn in text characters" />
+    </div>
+  );
+}
+
+function Ascii() {
+  const box = useScrollBox();
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start end", "end start"] });
+  const artY = useTransform(scrollYProgress, [0, 1], [70, -70]);
+
+  return (
+    <div className="ab-ascii" ref={ref}>
+      <div className="ab-ascii-grid">
+        <motion.div
+          className="ab-def"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ root: box, once: true, margin: "-15% 0px" }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2>Biomedical<br /><em>Engineer</em></h2>
+          <h3>The concept of Bhavith</h3>
+          <p>
+            <b>Bhavith (noun):</b> a state of restless building, characterized by an inability to leave
+            a working thing alone. Triggered by brain signals, loose wires and unsolved problems.
+            Usually found between a breadboard and a deadline, reading EEG at an hour that should
+            not exist. The condition is incredibly persistent and can only be managed with coffee.
+          </p>
+          <dl className="ab-def-meta">
+            <div><dt>Studies</dt><dd>B.Tech, Biomedical Engineering<br />B.V. Raju Institute of Technology</dd></div>
+            <div><dt>Class of</dt><dd className="ab-def-big">2027</dd></div>
+            <div><dt>Based</dt><dd>Hyderabad, Telangana</dd></div>
+            <div><dt>Status</dt><dd>Open to opportunities</dd></div>
+          </dl>
+        </motion.div>
+
+        <motion.div className="ab-ascii-col" style={{ y: artY }}>
+          <AsciiPortrait />
+        </motion.div>
       </div>
+    </div>
+  );
+}
+
+/* ─── 4. off the clock ────────────────────────────────────────────── */
+function OffClock() {
+  const box = useScrollBox();
+  const ref = useRef<HTMLDivElement>(null);
+  const [hot, setHot] = useState<number | null>(null);
+  const [shown, setShown] = useState(() => Math.max(0, HOBBIES.findIndex((h) => h.src)));
+  const rx = useMotionValue(0);
+  const ry = useMotionValue(0);
+  const x = useSpring(rx, { stiffness: 180, damping: 22, mass: 0.4 });
+  const y = useSpring(ry, { stiffness: 180, damping: 22, mass: 0.4 });
+  const tilt = useTransform(x, (v) => Math.max(-10, Math.min(10, (v - rx.get()) * -0.12)));
+
+  // the card only appears for rows that have a real photo — no filler art
+  const card = hot !== null && !!HOBBIES[hot].src;
+
+  const onMove = (e: React.MouseEvent) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    rx.set(e.clientX - r.left);
+    ry.set(e.clientY - r.top);
+  };
+
+  return (
+    <div className="ab-off" ref={ref} onMouseMove={onMove} onMouseLeave={() => setHot(null)}>
+      <div className="ab-off-head">
+        <h2 className="ab-scrawl">things i&apos;d rather be doing</h2>
+      </div>
+
+      <ul className="ab-rows">
+        {HOBBIES.map((h, i) => (
+          <motion.li
+            key={h.name}
+            className="ab-row"
+            data-hot={hot === i}
+            onMouseEnter={() => { setHot(i); if (h.src) setShown(i); }}
+            initial={{ opacity: 0, x: i % 2 ? 80 : -80 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ root: box, once: true, margin: "-6% 0px" }}
+            transition={{ duration: 0.7, ease: [0.2, 0.8, 0.25, 1] }}
+          >
+            <span className="ab-row-name">{h.name}</span>
+            <span className="ab-row-note ab-scrawl">{h.note}</span>
+          </motion.li>
+        ))}
+      </ul>
+
+      <motion.div
+        className="ab-follow"
+        style={{ x, y, rotate: tilt }}
+        animate={{ opacity: card ? 1 : 0, scale: card ? 1 : 0.6 }}
+        transition={{ duration: 0.25 }}
+        aria-hidden="true"
+      >
+        <div className="ab-frame ab-frame-follow">
+          <span className="ab-pin" />
+          <div className="ab-frame-art">
+            {HOBBIES[shown].src && <img key={shown} src={HOBBIES[shown].src} alt="" />}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ─── 5. sign-off ─────────────────────────────────────────────────── */
+function SignOff() {
+  const box = useScrollBox();
+  return (
+    <div className="ab-end">
+      <motion.h2
+        className="ab-scrawl ab-end-h"
+        initial={{ opacity: 0, clipPath: "inset(0 100% 0 0)" }}
+        whileInView={{ opacity: 1, clipPath: "inset(0 0% 0 0)" }}
+        viewport={{ root: box, once: true, margin: "-10% 0px" }}
+        transition={{ duration: 1, ease: [0.3, 0.7, 0.2, 1] }}
+      >
+        say hi.
+      </motion.h2>
+      <ul className="ab-links">
+        {LINKS.map((l) => (
+          <li key={l.label}>
+            <a
+              href={l.href}
+              download={l.download || undefined}
+              target={l.download || l.href.startsWith("mailto") ? undefined : "_blank"}
+              rel="noopener noreferrer"
+            >
+              <span>{l.label}</span>
+              <em>{l.meta}</em>
+              <b aria-hidden="true">{l.download ? "↓" : "↗"}</b>
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
