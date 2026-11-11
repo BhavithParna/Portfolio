@@ -3,29 +3,25 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  type MotionValue,
-} from "framer-motion";
+import { motion } from "framer-motion";
 import { House, UserRound, LibraryBig, Wrench, Mail, type LucideIcon } from "lucide-react";
 import { setScene, useScene, type Scene } from "@/lib/sceneStore";
 
 /*
-  DockNav — a floating glass bar, pinned to the bottom of every page. It
-  never hides.
+  DockNav — a glass tab bar, pinned to the bottom of every page. It never
+  hides.
 
-  - The glass adapts: it reads what's underneath it (a `data-dock-tone`
-    attribute if a section sets one, otherwise the first solid background
-    colour it finds) and switches between a light pane with ink icons and
-    a dark pane with white icons.
-  - The current page gets a pill that slides between icons (shared layout).
-  - Icons lift and magnify with cursor proximity; a label chip rises on hover.
+  One capsule of clear glass holding five tabs (icon over a small label).
+  A brighter lens of glass sits behind the current tab and slides to the
+  next one with a spring when you navigate. Icons swell slightly on hover
+  and squish on press.
 
-  Scene buttons swap the home stage (navigating home first if needed); the
-  workshop button is a page link.
+  The glass adapts: it reads what's underneath (a `data-dock-tone` attribute
+  if a section sets one, otherwise the first solid background it finds) and
+  switches between a light and a dark pane.
+
+  Scene tabs swap the home stage (navigating home first if needed); the
+  workshop tab is a page link.
 */
 
 type Item = { id: string; label: string; Icon: LucideIcon; scene?: Scene; href?: string };
@@ -68,9 +64,6 @@ export default function DockNav() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [tone, setTone] = useState<Tone>("dark");
 
-  // Cursor x in viewport coords; Infinity = cursor away, everything at rest.
-  const mouseX = useMotionValue(Infinity);
-
   // Re-read the backdrop on scroll (any scroller), resize, and page changes.
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -105,75 +98,51 @@ export default function DockNav() {
       <motion.nav
         className="dock"
         aria-label="Site navigation"
-        onMouseMove={(e) => mouseX.set(e.clientX)}
-        onMouseLeave={() => mouseX.set(Infinity)}
-        initial={{ y: 80, opacity: 0 }}
+        initial={{ y: 90, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 170, damping: 20, delay: 0.25 }}
       >
-        {ITEMS.map((item) => (
-          <DockItem
-            key={item.id}
-            item={item}
-            mouseX={mouseX}
-            active={item.scene ? pathname === "/" && scene === item.scene : pathname.startsWith(item.href ?? "~")}
-            onSelect={() => item.scene && onScene(item.scene)}
-          />
-        ))}
+        {ITEMS.map((item) => {
+          const active = item.scene ? pathname === "/" && scene === item.scene : pathname.startsWith(item.href ?? "~");
+          const inner = (
+            <>
+              {active && (
+                <motion.span
+                  layoutId="dock-lens"
+                  className="dock-lens"
+                  transition={{ type: "spring", stiffness: 380, damping: 30, mass: 0.9 }}
+                  aria-hidden="true"
+                />
+              )}
+              <motion.span
+                className="dock-icon"
+                whileHover={{ scale: 1.14, y: -1 }}
+                whileTap={{ scale: 0.86 }}
+                transition={{ type: "spring", stiffness: 420, damping: 18 }}
+              >
+                <item.Icon size={21} strokeWidth={active ? 2.1 : 1.7} aria-hidden="true" />
+              </motion.span>
+              <span className="dock-word">{item.label}</span>
+            </>
+          );
+          return item.href ? (
+            <Link key={item.id} href={item.href} className="dock-btn" data-active={active} aria-current={active ? "page" : undefined}>
+              {inner}
+            </Link>
+          ) : (
+            <button
+              key={item.id}
+              type="button"
+              className="dock-btn"
+              data-active={active}
+              aria-current={active ? "page" : undefined}
+              onClick={() => item.scene && onScene(item.scene)}
+            >
+              {inner}
+            </button>
+          );
+        })}
       </motion.nav>
     </div>
-  );
-}
-
-function DockItem({
-  item,
-  mouseX,
-  active,
-  onSelect,
-}: {
-  item: Item;
-  mouseX: MotionValue<number>;
-  active: boolean;
-  onSelect: () => void;
-}) {
-  const ref = useRef<HTMLSpanElement | null>(null);
-
-  // Distance from cursor to this icon's centre → lift + magnify.
-  const distance = useTransform(mouseX, (v) => {
-    const b = ref.current?.getBoundingClientRect();
-    return b ? v - (b.left + b.width / 2) : Infinity;
-  });
-  const spring = { mass: 0.12, stiffness: 240, damping: 17 };
-  const scale = useSpring(useTransform(distance, [-90, 0, 90], [1, 1.24, 1]), spring);
-  const y = useSpring(useTransform(distance, [-90, 0, 90], [0, -5, 0]), spring);
-
-  const inner = (
-    <span className="dock-cell" ref={ref}>
-      {active && (
-        <motion.span
-          layoutId="dock-active"
-          className="dock-active"
-          transition={{ type: "spring", stiffness: 420, damping: 34 }}
-        />
-      )}
-      <motion.span className="dock-icon" style={{ scale, y }} whileTap={{ scale: 0.86 }}>
-        <item.Icon size={20} strokeWidth={1.75} aria-hidden="true" />
-      </motion.span>
-    </span>
-  );
-
-  return (
-    <span className="dock-item" data-active={active}>
-      <span className="dock-label">{item.label}</span>
-      {item.href ? (
-        <Link href={item.href} aria-label={item.label} aria-current={active ? "page" : undefined} className="dock-btn">
-          {inner}
-        </Link>
-      ) : (
-        <button type="button" aria-label={item.label} aria-current={active ? "page" : undefined} className="dock-btn" onClick={onSelect}>
-          {inner}
-        </button>
-      )}
-    </span>
   );
 }

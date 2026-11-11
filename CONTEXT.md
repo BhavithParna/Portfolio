@@ -1118,3 +1118,18 @@ Each entry records the date, a summary of the change, and the files affected.
   Library: `LucaPointer` draws an animated arrow + "this one opens" under the Luca book.
 - **Files:** `components/LucaWall.tsx`, `components/luca-wall.css`, `app/luca/page.tsx`,
   `lib/lucaPhotos.ts`, `public/images/luca/`, `components/sections/Library.tsx`, `app/globals.css`.
+
+### 2026-11-11 — Dock redesigned as "the horizon"
+- **What:** `DockNav` is now five written labels on a ruler of ticks inside adaptive glass.
+  The current page is marked by a moon (an ember sun on light pages) that glides along the
+  ruler (`layoutId="dock-orb"`); ticks near the cursor rise (`tide()`), labels lift on hover.
+  Icons and hover chips are gone. Based on a survey of 27 portfolio sites (mostly plain top
+  text bars, hidden menus, or index lists; tick rulers on rauno.me / aristidebenoist.com).
+- **Files:** `components/DockNav.tsx`, `app/globals.css` (dock block).
+
+### 2026-11-11 — Dock: "the counter" (coffee cups)
+- **What:** The "horizon" ruler bar and the plain glass tab bar were both rejected. `DockNav`
+  is now a glass tray of five CSS-drawn cups seen from above with a label under each. The
+  current page's cup is poured (milk swirl, slow turn, steam); hover lifts a cup and ripples
+  the coffee. No icons or images. Tone detection unchanged.
+- **Files:** `components/DockNav.tsx`, `app/globals.css` (dock block).

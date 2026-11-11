@@ -967,147 +967,116 @@ body {
   .lib-pointer, .lib-pointer-line, .lib-pointer-head { animation: none; }
 }
 
-/* ─── Glass dock navigation (.dock-*) ────────────────────────────
-   One floating pane of glass, pinned to the bottom of every page.
-   `data-tone` (set by DockNav from whatever is underneath) swaps a light
-   pane with ink icons for a dark pane with white icons. */
+/* ─── Dock navigation: liquid-glass tab bar (.dock-*) ────────────
+   `data-tone` (set by DockNav from whatever is underneath) swaps light and
+   dark glass. */
 
 .dock-wrap {
-  /* dark tone (default): for night skies, photos, charcoal */
+  /* dark tone (default): night skies, photos, navy */
   --dock-fg: #ffffff;
-  --dock-fg-dim: rgba(255, 255, 255, 0.72);
-  --dock-glass: rgba(28, 28, 32, 0.46);
-  --dock-sheen: rgba(255, 255, 255, 0.14);
-  --dock-edge: rgba(255, 255, 255, 0.18);
-  --dock-rim: rgba(255, 255, 255, 0.32);
-  --dock-ring: rgba(0, 0, 0, 0.3);
-  --dock-pill: rgba(255, 255, 255, 0.2);
-  --dock-pill-edge: rgba(255, 255, 255, 0.28);
-  --dock-hover: rgba(255, 255, 255, 0.1);
-  --dock-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.25);
-  --dock-chip: rgba(20, 20, 23, 0.86);
-  --dock-chip-fg: #fff;
+  --dock-fg-dim: rgba(255, 255, 255, 0.66);
+  --dock-glass: rgba(120, 130, 150, 0.16);
+  --dock-tint: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.02) 55%, rgba(255, 255, 255, 0.07));
+  --dock-rim: linear-gradient(140deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.1) 32%, rgba(255, 255, 255, 0.06) 62%, rgba(255, 255, 255, 0.5));
+  --dock-inner: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -10px 18px -12px rgba(255, 255, 255, 0.22);
+  --dock-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.6), 0 6px 16px -4px rgba(0, 0, 0, 0.3);
+  --dock-filter: blur(22px) saturate(1.9) brightness(1.08);
+  --lens-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.13));
+  --lens-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.55), inset 0 -1px 1px rgba(255, 255, 255, 0.12), 0 6px 14px -6px rgba(0, 0, 0, 0.45);
 
   position: fixed;
-  bottom: max(1.15rem, env(safe-area-inset-bottom));
+  bottom: max(1.1rem, env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   z-index: 40;
 }
 .dock-wrap[data-tone="light"] {
-  --dock-fg: #151515;
-  --dock-fg-dim: rgba(21, 21, 21, 0.68);
-  --dock-glass: rgba(255, 255, 255, 0.52);
-  --dock-sheen: rgba(255, 255, 255, 0.55);
-  --dock-edge: rgba(255, 255, 255, 0.75);
-  --dock-rim: rgba(255, 255, 255, 0.95);
-  --dock-ring: rgba(20, 20, 20, 0.09);
-  --dock-pill: #151515;
-  --dock-pill-edge: #151515;
-  --dock-hover: rgba(20, 20, 20, 0.07);
-  --dock-shadow: 0 18px 38px -14px rgba(30, 25, 15, 0.32), 0 3px 10px rgba(30, 25, 15, 0.1);
-  --dock-chip: rgba(21, 21, 21, 0.92);
-  --dock-chip-fg: #fff;
+  --dock-fg: #0d1524;
+  --dock-fg-dim: rgba(13, 21, 36, 0.68);
+  --dock-glass: rgba(250, 247, 240, 0.74);
+  --dock-tint: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.18) 55%, rgba(255, 255, 255, 0.4));
+  --dock-rim: linear-gradient(140deg, #ffffff, rgba(255, 255, 255, 0.5) 32%, rgba(255, 255, 255, 0.35) 62%, #ffffff);
+  --dock-inner: inset 0 1px 1px #ffffff, inset 0 -10px 18px -12px rgba(255, 255, 255, 0.9);
+  --dock-shadow: 0 22px 44px -18px rgba(40, 32, 18, 0.38), 0 4px 12px -2px rgba(40, 32, 18, 0.12), 0 0 0 1px rgba(13, 21, 36, 0.06);
+  --dock-filter: blur(30px) saturate(1.6) brightness(1.06);
+  --lens-bg: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, 0.82));
+  --lens-shadow: inset 0 1px 0 #ffffff, 0 6px 14px -6px rgba(40, 32, 18, 0.35), 0 0 0 1px rgba(13, 21, 36, 0.05);
 }
 
 .dock {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 2px;
   padding: 6px;
   border-radius: 999px;
-  background:
-    linear-gradient(180deg, var(--dock-sheen), transparent 62%),
-    var(--dock-glass);
-  backdrop-filter: blur(26px) saturate(1.9);
-  -webkit-backdrop-filter: blur(26px) saturate(1.9);
-  border: 1px solid var(--dock-edge);
-  box-shadow:
-    inset 0 1px 0 var(--dock-rim),
-    0 0 0 1px var(--dock-ring),
-    var(--dock-shadow);
-  transition: background 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease;
+  background: var(--dock-tint), var(--dock-glass);
+  backdrop-filter: var(--dock-filter);
+  -webkit-backdrop-filter: var(--dock-filter);
+  box-shadow: var(--dock-inner), var(--dock-shadow);
+  transition: background 0.45s ease, box-shadow 0.45s ease;
 }
-
-.dock-item { position: relative; display: flex; justify-content: center; }
+/* the rim: a hairline that catches light at two corners */
+.dock::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--dock-rim);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
 
 .dock-btn {
-  display: block;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 72px;
+  height: 54px;
   background: none;
   border: none;
-  padding: 0;
   margin: 0;
-  cursor: pointer;
-  line-height: 0;
+  padding: 0;
   border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
   color: var(--dock-fg-dim);
-  transition: color 0.3s ease;
+  transition: color 0.25s ease;
   -webkit-tap-highlight-color: transparent;
 }
-.dock-item:hover .dock-btn,
-.dock-item[data-active="true"] .dock-btn { color: var(--dock-fg); }
-.dock-wrap[data-tone="light"] .dock-item[data-active="true"] .dock-btn { color: #fff; }
+.dock-btn:hover, .dock-btn[data-active="true"] { color: var(--dock-fg); }
+.dock-btn:focus-visible { outline: 2px solid var(--dock-fg); outline-offset: 2px; }
 
-.dock-cell {
+.dock-icon { position: relative; display: grid; place-items: center; line-height: 0; }
+.dock-word {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 999px;
-  transition: background 0.2s ease;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  line-height: 1;
 }
-.dock-item:not([data-active="true"]):hover .dock-cell { background: var(--dock-hover); }
+.dock-btn[data-active="true"] .dock-word { font-weight: 600; }
 
-/* the sliding pill behind the current page */
-.dock-active {
+/* the lens: a brighter bead of glass behind the current tab */
+.dock-lens {
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  background: var(--dock-pill);
-  border: 1px solid var(--dock-pill-edge);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 4px 10px -4px rgba(0, 0, 0, 0.4);
-  transition: background 0.45s ease, border-color 0.45s ease;
+  background: var(--lens-bg);
+  box-shadow: var(--lens-shadow);
 }
-.dock-icon { position: relative; display: grid; place-items: center; transform-origin: 50% 80%; }
-
-/* label chip */
-.dock-label {
-  position: absolute;
-  bottom: calc(100% + 16px);
-  left: 50%;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  line-height: 1;
-  color: var(--dock-chip-fg);
-  background: var(--dock-chip);
-  padding: 0.44rem 0.62rem;
-  border-radius: 8px;
-  white-space: nowrap;
-  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.5);
-  opacity: 0;
-  transform: translate(-50%, 5px) scale(0.96);
-  pointer-events: none;
-  transition: opacity 0.16s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.dock-item:hover .dock-label,
-.dock-item:has(.dock-btn:focus-visible) .dock-label {
-  opacity: 1;
-  transform: translate(-50%, 0) scale(1);
-}
-
-.dock-btn:focus-visible { outline: 2px solid var(--dock-fg); outline-offset: 2px; }
 
 @media (max-width: 640px) {
-  .dock-cell { width: 44px; height: 44px; }
-}
-@media (hover: none) {
-  .dock-label { display: none; }
+  .dock-btn { width: 62px; height: 52px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .dock, .dock-label, .dock-active { transition: none; }
+  .dock { transition: none; }
 }
-/* reload */
+
