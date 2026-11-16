@@ -117,7 +117,7 @@ const lifeMeta: {
     },
   },
   {
-    href: "/music",
+    href: "#music",
     title: "The Soundtrack",
     sub: "Music",
     w: 128, h: 312, mb: 0,
@@ -133,7 +133,7 @@ const lifeMeta: {
     foil: "#3A2C12",
   },
   {
-    href: "/horror",
+    href: "#horror",
     title: "Horror",
     sub: "After Dark",
     w: 116, h: 298, mb: 2,
@@ -616,13 +616,14 @@ export default function Library() {
   // The Horror book plays the scare, then opens. Luca's book opens his
   // photo sphere directly. Every other book drops
   // you in a liminal space and brings you back here. Modifier-clicks (new
-  // tab) still open the real page.
+  // tab) still open the real page. The Horror book plays the scare and
+  // returns to the shelf; it has no page of its own.
   const [gate, setGate] = useState<{ mode: "scream" | "liminal"; href?: string } | null>(null);
   const openBook = (href: string, e: React.MouseEvent<HTMLElement>) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
     if (href === "/luca") return;          // Luca's book just opens: let the link through
     e.preventDefault();
-    setGate(href === "/horror" ? { mode: "scream", href } : { mode: "liminal" });
+    setGate(href === "#horror" ? { mode: "scream" } : { mode: "liminal" });
   };
 
   /* Clicking anywhere dismisses the pinned quote note */
@@ -663,7 +664,7 @@ export default function Library() {
   }, []);
 
   return (
-    <section id="library" ref={sectionRef} className="sb-page lib-page" style={{ padding: "2.5rem 0 5rem" }}>
+    <section id="library" ref={sectionRef} className="sb-page lib-page" data-dock-tone="light" style={{ padding: "5.6rem 0 5rem" }}>
       <span className="sb-deckle sb-deckle-top" />
       <span className="sb-deckle sb-deckle-bottom" />
       <div className="sb-wrap">

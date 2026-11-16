@@ -1,206 +1,320 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type RefObject,
-} from "react";
-import {
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-  type MotionValue,
-} from "framer-motion";
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import { useGSAP } from "@gsap/react";
 import "./about.css";
 
+gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
+
 /*
-  About — "File Nº 01".
+  About.
 
-  A black-and-white print piece that starts on paper and ends on charcoal.
-  References: a cut-out editorial poster (giant ghost name, handwritten ME,
-  name badge, pill tags), a pinned photo board with typewriter notes, a
-  Swiss-type grain poster, an ASCII-art figure on dark, and a film contact
-  sheet with handwriting over it.
+  Same place as the Hero and Contact: night navy, cream and ember, Playfair
+  with the offset outline. Five things, top to bottom, and nothing labelling
+  them: the title on paper over the halftone portrait (its dots blow apart as you
+  scroll and the night rises over the page), one paragraph set large, the build photos on
+  a sideways reel, the "definition" beside the portrait drawn in characters, the off-hours
+  as full-width rows, the links.
 
-  Top to bottom:
-    1. Poster   — paper. Ghost wordmark, the portrait as a live halftone
-                  (dots scatter as you scroll away), ME, badge, typed note.
-    2. Strip    — paper. A pinned roll of film that runs sideways as you scroll.
-    3. Ascii    — charcoal, rising over the paper as a dome. The portrait in
-                  characters, the "definition" bio, the toolkit as marquees.
-    4. OffClock — hobbies as full-width rows; a frame follows the cursor.
-    5. SignOff  — links.
-
-  Picture slots are generated abstract artwork (<Abstract />) until real
-  photos arrive: give a SHOTS or HOBBIES entry a `src` to use one.
-
-  The stage renders this inside `.scene` (an overflow:auto box), so every
-  useScroll here is bound to that element via ScrollBox, not the window.
+  Motion is GSAP. The stage scrolls inside `.scene` (an overflow:auto box),
+  so every ScrollTrigger names that element as its scroller. Pinning is done
+  with position:sticky and scrubbed, which stays steady in a nested scroller.
+  With reduced motion nothing is animated and everything is simply there.
 */
 
-const ScrollBox = createContext<RefObject<HTMLElement | null>>({ current: null });
-const useScrollBox = () => useContext(ScrollBox);
-
-/* ─── content ─────────────────────────────────────────────────────── */
 const PORTRAIT = "/images/about/portrait-cut.webp";
 const EMAIL = "bhavithparna6@gmail.com";
-
-const PILLS = ["Biomedical engineer", "Neurotech · BCI", "Year 4 of 4", "Hyderabad, IN", EMAIL];
-
-const BIO =
-  "I'm Bhavith, a fourth-year biomedical engineering student in Hyderabad. I build things that sit between people and machines: a drone you steer with brain signals, a rehab game for kids with cerebral palsy. It started with Lego. It never really stopped.";
-
-/* The roll of film. `src` swaps the generated artwork for a real photo. */
-type Shot = { v: number; tall?: boolean; src?: string; alt?: string };
 const A = "/images/about/";
-const SHOTS: Shot[] = [
-  { v: 0, tall: true, src: A + "bci-headset.webp", alt: "A 3D-printed EEG headset frame with an OpenBCI board wired to it" },
-  { v: 1, src: A + "smart-helmet.webp", alt: "Bhavith wearing a helmet with sensor boards and wiring mounted on the side" },
-  { v: 2, tall: true, src: A + "breadboard-lcd.webp", alt: "An Arduino, an LCD and a breadboard joined by a tangle of jumper wires" },
-  { v: 3, tall: true, src: A + "reaction-timer.webp", alt: "Hands holding a clear box with a lit LCD reading Trial 2 of 10" },
-  { v: 4, src: A + "sensor-breadboard.webp", alt: "A breadboard with a gas sensor and glowing red LEDs on a desk" },
-  { v: 5, tall: true, src: A + "dog-headphones.webp", alt: "A curly brown dog wearing headphones" },
+
+const SHOTS = [
+  { src: A + "bci-headset.webp", w: 675, h: 1200, alt: "A 3D-printed EEG headset frame with an OpenBCI board wired to it" },
+  { src: A + "smart-helmet.webp", w: 1200, h: 900, alt: "Bhavith wearing a helmet with sensor boards and wiring mounted on the side" },
+  { src: A + "breadboard-lcd.webp", w: 675, h: 1200, alt: "An Arduino, an LCD and a breadboard joined by a tangle of jumper wires" },
+  { src: A + "sensor-breadboard.webp", w: 1200, h: 900, alt: "A breadboard with a gas sensor and glowing red LEDs on a desk" },
+  { src: A + "reaction-timer.webp", w: 675, h: 1200, alt: "Hands holding a clear box with a lit LCD reading Trial 2 of 10" },
+  { src: A + "dog-headphones.webp", w: 560, h: 1200, alt: "A curly brown dog wearing headphones" },
 ];
 
-type Hobby = { name: string; note: string; v: number; src?: string };
-const HOBBIES: Hobby[] = [
-  { name: "Cooking",          note: "edible. usually.",                   v: 6 },
-  { name: "Basketball",       note: "pick-up games, questionable ankles", v: 0 },
-  { name: "Making playlists", note: "nobody asked. everybody gets one.",  v: 2, src: A + "dog-headphones.webp" },
-  { name: "Horror films",     note: "2am, the scarier the better",        v: 5 },
-  { name: "Driving around",   note: "no destination, good playlist",      v: 1 },
-  { name: "Too much coffee",  note: "№ 3 is a lifestyle",                 v: 3 },
+const HOBBIES = [
+  { name: "Cooking", note: "edible. usually." },
+  { name: "Basketball", note: "pick-up games, questionable ankles" },
+  { name: "Making playlists", note: "nobody asked. everybody gets one.", src: A + "dog-headphones.webp" },
+  { name: "Horror films", note: "2am, the scarier the better" },
+  { name: "Driving around", note: "no destination, good playlist" },
+  { name: "Too much coffee", note: "№ 3 is a lifestyle" },
 ];
 
 const LINKS = [
   { label: "Download CV", meta: "PDF", href: "/bhavith-parna-cv.pdf", download: true },
   { label: "GitHub", meta: "@BhavithParna", href: "https://github.com/BhavithParna" },
-  { label: "LinkedIn", meta: "say hello", href: "https://www.linkedin.com/in/bhavith-parna-2920b0178/" },
+  { label: "LinkedIn", meta: "in/bhavith-parna", href: "https://www.linkedin.com/in/bhavith-parna-2920b0178/" },
   { label: "Email", meta: EMAIL, href: `mailto:${EMAIL}` },
 ];
 
-/* ─── root ────────────────────────────────────────────────────────── */
 export default function About() {
-  const rootRef = useRef<HTMLElement>(null);
-  const [box, setBox] = useState<HTMLElement | null>(null);
+  const root = useRef<HTMLElement>(null);
+  const scatter = useRef(0);   // 0..1 as the opening scrolls away; the halftone reads it every frame
 
-  useLayoutEffect(() => {
-    setBox(rootRef.current?.closest<HTMLElement>(".scene") ?? null);
-  }, []);
-  const boxRef = useMemo<RefObject<HTMLElement | null>>(() => ({ current: box }), [box]);
+  useGSAP(
+    () => {
+      const el = root.current;
+      const scroller = el?.closest<HTMLElement>(".scene");
+      if (!el || !scroller) return;
+      const q = gsap.utils.selector(el);
+      const mm = gsap.matchMedia();
 
-  return (
-    <section id="about" className="ab-page" ref={rootRef}>
-      <ScrollBox.Provider value={boxRef}>
-        {box && (
-          <>
-            <div className="ab-grain" aria-hidden="true" />
-            <Poster />
-            <Strip />
-            <Dark>
-              <Ascii />
-              <OffClock />
-              <SignOff />
-            </Dark>
-          </>
-        )}
-      </ScrollBox.Provider>
-    </section>
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        const st = (vars: ScrollTrigger.Vars): ScrollTrigger.Vars => ({ scroller, ...vars });
+
+        /* ── opening: title rises letter by letter, the photo unrolls ── */
+        const titles = SplitText.create(q(".ab-t-main"), { type: "chars" });
+        const intro = gsap.timeline({ defaults: { ease: "expo.out" } });
+        intro
+          .from(q(".ab-ghost"), { yPercent: 18, opacity: 0, duration: 1.4 }, 0)
+          .from(titles.chars, { yPercent: 120, duration: 1.2, stagger: 0.045 }, 0.35)
+          .from(q(".ab-t-echo"), { opacity: 0, x: -14, y: -14, duration: 1.1, stagger: 0.12 }, 0.9)
+          .from(q(".ab-open-note, .ab-open .ab-cross"), { opacity: 0, duration: 0.9, stagger: 0.06 }, 1.1);
+
+        /* …and comes apart as you scroll away: the dots blow outward, the type slides off */
+        gsap
+          .timeline({
+            defaults: { ease: "none" },
+            scrollTrigger: st({
+              trigger: q(".ab-open")[0], start: "top top", end: "bottom top", scrub: 0.6,
+              onUpdate: (self) => { scatter.current = self.progress; },
+            }),
+          })
+          .to(q(".ab-ghost"), { xPercent: -10, scale: 1.2 }, 0)
+          .to(q(".ab-t-about"), { xPercent: -14 }, 0)
+          .to(q(".ab-t-me"), { xPercent: 22 }, 0)
+          .to(q(".ab-open-note"), { opacity: 0 }, 0);
+
+        /* the night rises over the paper as a dome */
+        const dark = q(".ab-dark")[0];
+        ScrollTrigger.create(st({
+          trigger: dark, start: "top bottom", end: "top top", scrub: true,
+          onUpdate: (self) => {
+            const p = self.progress;
+            if (p >= 0.995) { dark.style.clipPath = "none"; return; }
+            const vw = scroller.clientWidth, vh = scroller.clientHeight;
+            const r = Math.max(vw, vh) * 0.95;
+            const sag = r - Math.sqrt(Math.max(0, r * r - (vw * vw) / 4));
+            dark.style.clipPath = `circle(${r}px at 50% ${p * vh * (1 - p) - sag * p + r}px)`;
+          },
+        }));
+
+        /* ── the paragraph: words come up to full strength as you read ── */
+        SplitText.create(q(".ab-say p"), {
+          type: "words",
+          autoSplit: true,
+          onSplit: (self) =>
+            gsap.fromTo(
+              self.words,
+              { opacity: 0.14 },
+              { opacity: 1, ease: "none", stagger: 0.08, scrollTrigger: st({ trigger: q(".ab-say")[0], start: "top 72%", end: "bottom 62%", scrub: 0.5 }) },
+            ),
+        });
+
+        /* ── the reel: runs sideways while the page is held ── */
+        const reel = q(".ab-reel")[0];
+        const track = q(".ab-track")[0];
+        const run = () => -Math.max(0, track.scrollWidth - scroller.clientWidth);
+        gsap
+          .timeline({ defaults: { ease: "none" }, scrollTrigger: st({ trigger: reel, start: "top top", end: "bottom bottom", scrub: 0.8, invalidateOnRefresh: true }) })
+          .to(track, { x: run }, 0)
+          .fromTo(q(".ab-shot img"), { xPercent: -7 }, { xPercent: 7 }, 0);
+        gsap.from(q(".ab-shot"), {
+          clipPath: "inset(0% 0% 100% 0%)",
+          yPercent: 14,
+          duration: 1.3,
+          ease: "expo.out",
+          stagger: 0.09,
+          scrollTrigger: st({ trigger: reel, start: "top 65%", once: true }),
+        });
+
+        /* ── the definition and the ASCII portrait ── */
+        gsap.from(q(".ab-def > *"), {
+          y: 44, opacity: 0, duration: 1.1, ease: "expo.out", stagger: 0.09,
+          scrollTrigger: st({ trigger: q(".ab-ascii")[0], start: "top 70%", once: true }),
+        });
+        gsap.fromTo(q(".ab-ascii-col"), { y: 70 }, {
+          y: -70, ease: "none",
+          scrollTrigger: st({ trigger: q(".ab-ascii")[0], start: "top bottom", end: "bottom top", scrub: 0.6 }),
+        });
+
+        /* ── off the clock: rows slide in from alternate sides ── */
+        q(".ab-row").forEach((row, i) => {
+          gsap.from(row, {
+            xPercent: i % 2 ? 9 : -9, opacity: 0, duration: 1.1, ease: "expo.out",
+            scrollTrigger: st({ trigger: row, start: "top 94%", once: true }),
+          });
+        });
+
+        /* the pinned print follows the cursor over rows that have a photo */
+        const off = q(".ab-off")[0] as HTMLElement;
+        const card = q(".ab-follow")[0];
+        const cx = gsap.quickTo(card, "x", { duration: 0.45, ease: "power3" });
+        const cy = gsap.quickTo(card, "y", { duration: 0.45, ease: "power3" });
+        const show = gsap.quickTo(card, "opacity", { duration: 0.25 });
+        const grow = gsap.quickTo(card, "scale", { duration: 0.35, ease: "power3" });
+        const onMove = (e: MouseEvent) => {
+          const r = off.getBoundingClientRect();
+          cx(e.clientX - r.left);
+          cy(e.clientY - r.top);
+          const hot = (e.target as HTMLElement).closest<HTMLElement>(".ab-row")?.dataset.card === "true";
+          show(hot ? 1 : 0);
+          grow(hot ? 1 : 0.6);
+        };
+        const onLeave = () => { show(0); grow(0.6); };
+        off.addEventListener("mousemove", onMove);
+        off.addEventListener("mouseleave", onLeave);
+
+        /* ── the links ── */
+        gsap.from(q(".ab-links li"), {
+          y: 40, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.08,
+          scrollTrigger: st({ trigger: q(".ab-end")[0], start: "top 88%", once: true }),
+        });
+
+        // the stage fades scenes in with a slight scale; measure again once it has settled
+        const settle = gsap.delayedCall(0.7, () => ScrollTrigger.refresh());
+        return () => {
+          off.removeEventListener("mousemove", onMove);
+          off.removeEventListener("mouseleave", onLeave);
+          settle.kill();
+        };
+      });
+    },
+    { scope: root },
   );
-}
-
-/* cursor position across an element as -1..1 springs */
-function useCursor() {
-  const reduce = useReducedMotion();
-  const rx = useMotionValue(0);
-  const ry = useMotionValue(0);
-  const mx = useSpring(rx, { stiffness: 50, damping: 18 });
-  const my = useSpring(ry, { stiffness: 50, damping: 18 });
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (reduce) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    rx.set(((e.clientX - r.left) / r.width) * 2 - 1);
-    ry.set(((e.clientY - r.top) / r.height) * 2 - 1);
-  };
-  const onMouseLeave = () => { rx.set(0); ry.set(0); };
-  return { mx, my, onMouseMove, onMouseLeave };
-}
-
-/* ─── 1. poster ───────────────────────────────────────────────────── */
-function Poster() {
-  const box = useScrollBox();
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start start", "end start"] });
-  const { mx, my, onMouseMove, onMouseLeave } = useCursor();
-
-  const ghostX = useTransform([mx, scrollYProgress] as MotionValue<number>[], ([m, s]: number[]) => `${m * -1.6 - s * 16}%`);
-  const ghostScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
-  const badgeX = useTransform(mx, (v) => v * -22);
-  const badgeY = useTransform([my, scrollYProgress] as MotionValue<number>[], ([m, s]: number[]) => m * -14 - s * 260);
-  const badgeRot = useTransform(scrollYProgress, [0, 1], [0, -38]);
-  const meY = useTransform(scrollYProgress, [0, 1], [0, -220]);
-  const meRot = useTransform(scrollYProgress, [0, 1], [0, -14]);
-  const sideY = useTransform(scrollYProgress, [0, 1], [0, -110]);
-  const sideO = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
-    <div className="ab-poster" data-dock-tone="light" ref={ref} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
-
-      <motion.div className="ab-ghost" style={{ x: ghostX, scale: ghostScale }} aria-hidden="true">
-        {"BHAVITH".split("").map((c, i) => (
-          <span key={i} style={{ animationDelay: `${0.05 + i * 0.05}s` }}>{c}</span>
-        ))}
-      </motion.div>
-
-      <div className="ab-poster-grid">
-        <div className="ab-col-l">
-          <motion.h1 className="ab-me" aria-label="About me" style={{ y: meY, rotate: meRot }}><span>ME</span></motion.h1>
-          <motion.ul className="ab-pills" style={{ y: sideY, opacity: sideO }}>
-            {PILLS.map((p, i) => (
-              <li key={p} className="ab-pop" style={{ animationDelay: `${0.75 + i * 0.07}s` }}>{p}</li>
-            ))}
-          </motion.ul>
-        </div>
+    <section id="about" className="ab-page" ref={root}>
+      {/* ── opening ── */}
+      <div className="ab-open" data-dock-tone="light">
+        <div className="ab-ghost" aria-hidden="true">BHAVITH</div>
 
         <div className="ab-portrait">
-          <Halftone progress={scrollYProgress} />
-          <motion.div className="ab-badge-wrap" style={{ x: badgeX, y: badgeY, rotate: badgeRot }}>
-            <div className="ab-badge">
-              <b>HELLO!</b>
-              <i>my name is</i>
-              <strong>BHAVITH</strong>
-            </div>
-          </motion.div>
+          <Halftone progress={scatter} />
         </div>
 
-        <motion.div className="ab-col-r" style={{ y: sideY, opacity: sideO }}>
-          <div className="ab-typed ab-in" style={{ animationDelay: "1.2s" }}>
-            <p>{BIO}</p>
-          </div>
-        </motion.div>
+        <h1 className="ab-title" aria-label="About me">
+          <span className="ab-t-row ab-t-about" aria-hidden="true">
+            <span className="ab-t-echo">About</span>
+            <span className="ab-t-main">About</span>
+          </span>
+          <span className="ab-t-row ab-t-me" aria-hidden="true">
+            <span className="ab-t-echo">me</span>
+            <span className="ab-t-main">me</span>
+          </span>
+        </h1>
+
+        <p className="ab-open-note">Biomedical engineer, Hyderabad</p>
+        <i className="ab-cross" data-at="bl" aria-hidden="true" />
+        <i className="ab-cross" data-at="br" aria-hidden="true" />
       </div>
-    </div>
+
+      <div className="ab-dark">
+      {/* ── the paragraph ── */}
+      <div className="ab-say">
+        <p>
+          I&rsquo;m Bhavith, a fourth-year biomedical engineering student in Hyderabad. I build things that sit
+          between <em>people and machines</em>: a drone you steer with brain signals, a rehab game for kids with
+          cerebral palsy. It started with Lego. <em>It never really stopped.</em>
+        </p>
+      </div>
+
+      {/* ── the reel ── */}
+      <div className="ab-reel">
+        <div className="ab-reel-hold">
+          <div className="ab-track">
+            {SHOTS.map((s, i) => (
+              <figure key={s.src} className="ab-shot" data-tall={s.h > s.w} data-drop={i % 2 === 1}>
+                <img src={s.src} alt={s.alt} width={s.w} height={s.h} draggable={false} />
+              </figure>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── the definition, beside the portrait in characters ── */}
+      <div className="ab-ascii">
+        <div className="ab-ascii-grid">
+          <div className="ab-def">
+            <h2>Biomedical<br /><em>Engineer</em></h2>
+            <h3>The concept of Bhavith</h3>
+            <p>
+              <b>Bhavith (noun):</b> a state of restless building, characterized by an inability to leave
+              a working thing alone. Triggered by brain signals, loose wires and unsolved problems.
+              Usually found between a breadboard and a deadline, reading EEG at an hour that should
+              not exist. The condition is incredibly persistent and can only be managed with coffee.
+            </p>
+            <dl className="ab-def-meta">
+              <div><dt>Studies</dt><dd>B.Tech, Biomedical Engineering<br />B.V. Raju Institute of Technology</dd></div>
+              <div><dt>Class of</dt><dd className="ab-def-big">2027</dd></div>
+              <div><dt>Based</dt><dd>Hyderabad, Telangana</dd></div>
+              <div><dt>Status</dt><dd>Open to opportunities</dd></div>
+            </dl>
+          </div>
+          <div className="ab-ascii-col">
+            <AsciiPortrait />
+          </div>
+        </div>
+      </div>
+
+      {/* ── off the clock ── */}
+      <div className="ab-off">
+        <ul className="ab-rows">
+          {HOBBIES.map((h) => (
+            <li key={h.name} className="ab-row" data-card={Boolean(h.src)}>
+              <span className="ab-row-name">{h.name}</span>
+              <span className="ab-row-note">{h.note}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="ab-follow" aria-hidden="true">
+          <div className="ab-frame ab-frame-follow">
+            <span className="ab-pin" />
+            <div className="ab-frame-art"><img src={A + "dog-headphones.webp"} alt="" /></div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── links ── */}
+      <div className="ab-end">
+        <ul className="ab-links">
+          {LINKS.map((l) => (
+            <li key={l.label}>
+              <a
+                href={l.href}
+                download={l.download || undefined}
+                target={l.download || l.href.startsWith("mailto") ? undefined : "_blank"}
+                rel="noopener noreferrer"
+              >
+                <span>{l.label}</span>
+                <em>{l.meta}</em>
+                <b aria-hidden="true">{l.download ? "↓" : "↗"}</b>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      </div>
+    </section>
   );
 }
 
 /* The portrait as a halftone print: one ink dot per cell, sized by how dark
    the photo is there. Dots grow in from the centre, lean away from the
    cursor, and blow apart as the poster scrolls off. */
-function Halftone({ progress }: { progress: MotionValue<number> }) {
-  const reduce = useReducedMotion();
+function Halftone({ progress }: { progress: { current: number } }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const wrap = wrapRef.current;
     const canvas = canvasRef.current;
     if (!wrap || !canvas) return;
@@ -298,7 +412,7 @@ function Halftone({ progress }: { progress: MotionValue<number> }) {
       if (!n) return;
       if (!start) start = now;
       const intro = Math.min(1, (now - start) / 1700);
-      const s = Math.min(1, Math.max(0, progress.get()));
+      const s = Math.min(1, Math.max(0, progress.current));
       const mdx = mouse.tx - mouse.x, mdy = mouse.ty - mouse.y;
       const moving = Math.abs(mdx) + Math.abs(mdy) > 0.4;
       if (moving) { mouse.x += mdx * 0.2; mouse.y += mdy * 0.2; }
@@ -331,7 +445,7 @@ function Halftone({ progress }: { progress: MotionValue<number> }) {
       ro.disconnect();
       window.removeEventListener("mousemove", onMove);
     };
-  }, [reduce, progress]);
+  }, [progress]);
 
   return (
     <div className="ab-half" ref={wrapRef}>
@@ -340,198 +454,16 @@ function Halftone({ progress }: { progress: MotionValue<number> }) {
   );
 }
 
-/* ─── 2. the roll of film: pinned, runs sideways on scroll ────────── */
-function Strip() {
-  const box = useScrollBox();
-  const ref = useRef<HTMLDivElement>(null);
-  const reelRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start start", "end end"] });
-  const p = useSpring(scrollYProgress, { stiffness: 120, damping: 26, mass: 0.4 });
-
-  const x = useTransform(p, (v) => {
-    const reel = reelRef.current;
-    const vw = box.current?.clientWidth ?? 0;
-    return reel ? -v * Math.max(0, reel.scrollWidth - vw) : 0;
-  });
-  const titleRot = useTransform(p, [0, 1], [-5, -1]);
-
-  return (
-    <div className="ab-strip" data-dock-tone="light" ref={ref}>
-      <div className="ab-strip-sticky">
-        <div className="ab-strip-head">
-          <motion.h2
-            className="ab-scrawl ab-strip-title"
-            style={{ rotate: titleRot }}
-            initial={{ opacity: 0, clipPath: "inset(-20% 100% -20% 0)" }}
-            whileInView={{ opacity: 1, clipPath: "inset(-20% -5% -20% 0)" }}
-            viewport={{ root: box, once: true, margin: "-20% 0px" }}
-            transition={{ duration: 1.1, ease: [0.3, 0.7, 0.2, 1] }}
-          >
-            proof i was here
-          </motion.h2>
-        </div>
-
-        <motion.div className="ab-reel" ref={reelRef} style={{ x }}>
-          <div className="ab-film-band">
-            {SHOTS.map((s, i) => (
-              <figure key={i} className={s.tall ? "ab-shot ab-shot-tall" : "ab-shot"}>
-                <div className="ab-shot-art">
-                  {s.src ? <img src={s.src} alt={s.alt ?? ""} draggable={false} /> : <Abstract v={s.v} />}
-                </div>
-              </figure>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── the dark half: rises over the paper as a dome ───────────────── */
-function Dark({ children }: { children: React.ReactNode }) {
-  const box = useScrollBox();
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start end", "start start"] });
-
-  const clipPath = useTransform(scrollYProgress, (p) => {
-    const el = box.current;
-    if (reduce || !el || p >= 0.995) return "none";
-    const vw = el.clientWidth, vh = el.clientHeight;
-    const r = Math.max(vw, vh) * 0.95;
-    const sag = r - Math.sqrt(Math.max(0, r * r - (vw * vw) / 4));
-    // apex of the dome, in this element's own coordinates
-    const top = p * vh * (1 - p) - sag * p;
-    return `circle(${r}px at 50% ${top + r}px)`;
-  });
-
-  return (
-    <motion.div className="ab-dark" ref={ref} style={{ clipPath }}>
-      {children}
-    </motion.div>
-  );
-}
-
-/* ─── abstract artwork: grainy black-and-white compositions ───────── */
-function Abstract({ v }: { v: number }) {
-  const id = useId().replace(/:/g, "");
-  const g = `g${id}`;
-  const s = `s${id}`;
-  const body = (() => {
-    switch (v % 7) {
-      case 0: // the eye
-        return (
-          <>
-            <rect width="100" height="100" fill="#e6e3dd" />
-            <circle cx="52" cy="46" r="34" fill={`url(#${s})`} />
-            <circle cx="50" cy="48" r="16" fill="#0d0d0d" />
-            <rect x="43" y="40" width="6" height="5" fill="#f2f0ea" transform="rotate(-18 46 42)" />
-            <ellipse cx="54" cy="92" rx="30" ry="4" fill="#000" opacity="0.25" />
-          </>
-        );
-      case 1: // horizon
-        return (
-          <>
-            <rect width="100" height="100" fill="#dcd9d2" />
-            <circle cx="68" cy="38" r="17" fill="#111" />
-            <rect y="58" width="100" height="42" fill="#151515" />
-            <path d="M0 58 Q25 50 48 58 T100 55 V62 H0Z" fill="#151515" />
-            <rect x="22" y="44" width="2.4" height="18" fill="#111" />
-            <circle cx="23.2" cy="42" r="3" fill="#111" />
-          </>
-        );
-      case 2: // rings
-        return (
-          <>
-            <rect width="100" height="100" fill="#141414" />
-            {[44, 36, 28, 20, 12].map((r, k) => (
-              <circle key={r} cx="50" cy="52" r={r} fill="none" stroke="#e9e6e0" strokeWidth={k % 2 ? 1 : 3} />
-            ))}
-            <circle cx="50" cy="52" r="5" fill="#e9e6e0" />
-          </>
-        );
-      case 3: // stripes + disc
-        return (
-          <>
-            <rect width="100" height="100" fill="#e6e3dd" />
-            {Array.from({ length: 12 }, (_, k) => (
-              <rect key={k} x={-40 + k * 14} y="-20" width="6" height="160" fill="#131313" transform="rotate(32 50 50)" />
-            ))}
-            <circle cx="60" cy="42" r="24" fill="#e6e3dd" />
-            <circle cx="60" cy="42" r="17" fill="#131313" />
-          </>
-        );
-      case 4: // stacked blocks
-        return (
-          <>
-            <rect width="100" height="100" fill="#d9d6cf" />
-            <rect x="14" y="60" width="34" height="26" fill="#111" />
-            <rect x="48" y="44" width="26" height="42" fill="#3a3a3a" />
-            <rect x="30" y="30" width="26" height="30" fill="#111" />
-            <path d="M56 30 A14 14 0 0 1 84 30 V44 H56Z" fill="#111" />
-            {[20, 30, 40].map((x) => <circle key={x} cx={x} cy="56" r="2.4" fill="#111" />)}
-            <rect y="86" width="100" height="14" fill="#111" />
-          </>
-        );
-      case 5: // halftone moon
-        return (
-          <>
-            <rect width="100" height="100" fill="#121212" />
-            {Array.from({ length: 11 }, (_, r) =>
-              Array.from({ length: 11 }, (_, c) => {
-                const d = Math.hypot(c - 6.2, r - 4.2);
-                const rad = Math.max(0, 3.9 - d * 0.62);
-                return rad > 0.2 ? <circle key={`${r}-${c}`} cx={5 + c * 9} cy={5 + r * 9} r={rad} fill="#ece9e3" /> : null;
-              }),
-            )}
-          </>
-        );
-      default: // signal traces
-        return (
-          <>
-            <rect width="100" height="100" fill="#e6e3dd" />
-            {[18, 34, 50, 66, 82].map((y, k) => (
-              <path
-                key={y}
-                d={`M0 ${y} H${14 + k * 6} l3 -${9 + k * 2} l4 ${20 + k * 3} l4 -${16 + k} l3 ${5 + k} H${58 + k * 4} l3 -${6 + k * 2} l3 ${12 + k * 2} l3 -6 H100`}
-                fill="none"
-                stroke="#121212"
-                strokeWidth={k === 2 ? 2.2 : 1}
-              />
-            ))}
-          </>
-        );
-    }
-  })();
-
-  return (
-    <svg className="ab-abstract" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <defs>
-        <radialGradient id={s} cx="0.36" cy="0.3" r="0.8">
-          <stop offset="0" stopColor="#fbfaf6" />
-          <stop offset="0.55" stopColor="#bdbab3" />
-          <stop offset="1" stopColor="#4d4b47" />
-        </radialGradient>
-        <filter id={g} x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="1.9" numOctaves="2" seed={v + 3} result="n" />
-          <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 1.5 -0.55" result="gr" />
-          <feBlend in="SourceGraphic" in2="gr" mode="overlay" />
-        </filter>
-      </defs>
-      <g filter={`url(#${g})`}>{body}</g>
-    </svg>
-  );
-}
-
-/* ─── 3. ascii: the portrait in characters + the definition ──────── */
+/* The portrait drawn in text characters: resolves top to bottom, scrambles
+   under the cursor, shimmers faintly at rest. */
 const RAMP = " .:^~!7?JY5PGB#&@";
 
 function AsciiPortrait() {
-  const reduce = useReducedMotion();
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const wrap = wrapRef.current;
     const canvas = canvasRef.current;
     if (!wrap || !canvas) return;
@@ -657,148 +589,11 @@ function AsciiPortrait() {
       wrap.removeEventListener("mousemove", onMove);
       wrap.removeEventListener("mouseleave", onLeave);
     };
-  }, [reduce]);
+  }, []);
 
   return (
     <div className="ab-ascii-art" ref={wrapRef}>
       <canvas ref={canvasRef} role="img" aria-label="Portrait of Bhavith drawn in text characters" />
-    </div>
-  );
-}
-
-function Ascii() {
-  const box = useScrollBox();
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ container: box, target: ref, offset: ["start end", "end start"] });
-  const artY = useTransform(scrollYProgress, [0, 1], [70, -70]);
-
-  return (
-    <div className="ab-ascii" ref={ref}>
-      <div className="ab-ascii-grid">
-        <motion.div
-          className="ab-def"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ root: box, once: true, margin: "-15% 0px" }}
-          transition={{ duration: 0.8 }}
-        >
-          <h2>Biomedical<br /><em>Engineer</em></h2>
-          <h3>The concept of Bhavith</h3>
-          <p>
-            <b>Bhavith (noun):</b> a state of restless building, characterized by an inability to leave
-            a working thing alone. Triggered by brain signals, loose wires and unsolved problems.
-            Usually found between a breadboard and a deadline, reading EEG at an hour that should
-            not exist. The condition is incredibly persistent and can only be managed with coffee.
-          </p>
-          <dl className="ab-def-meta">
-            <div><dt>Studies</dt><dd>B.Tech, Biomedical Engineering<br />B.V. Raju Institute of Technology</dd></div>
-            <div><dt>Class of</dt><dd className="ab-def-big">2027</dd></div>
-            <div><dt>Based</dt><dd>Hyderabad, Telangana</dd></div>
-            <div><dt>Status</dt><dd>Open to opportunities</dd></div>
-          </dl>
-        </motion.div>
-
-        <motion.div className="ab-ascii-col" style={{ y: artY }}>
-          <AsciiPortrait />
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── 4. off the clock ────────────────────────────────────────────── */
-function OffClock() {
-  const box = useScrollBox();
-  const ref = useRef<HTMLDivElement>(null);
-  const [hot, setHot] = useState<number | null>(null);
-  const [shown, setShown] = useState(() => Math.max(0, HOBBIES.findIndex((h) => h.src)));
-  const rx = useMotionValue(0);
-  const ry = useMotionValue(0);
-  const x = useSpring(rx, { stiffness: 180, damping: 22, mass: 0.4 });
-  const y = useSpring(ry, { stiffness: 180, damping: 22, mass: 0.4 });
-  const tilt = useTransform(x, (v) => Math.max(-10, Math.min(10, (v - rx.get()) * -0.12)));
-
-  // the card only appears for rows that have a real photo — no filler art
-  const card = hot !== null && !!HOBBIES[hot].src;
-
-  const onMove = (e: React.MouseEvent) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    rx.set(e.clientX - r.left);
-    ry.set(e.clientY - r.top);
-  };
-
-  return (
-    <div className="ab-off" ref={ref} onMouseMove={onMove} onMouseLeave={() => setHot(null)}>
-      <div className="ab-off-head">
-        <h2 className="ab-scrawl">things i&apos;d rather be doing</h2>
-      </div>
-
-      <ul className="ab-rows">
-        {HOBBIES.map((h, i) => (
-          <motion.li
-            key={h.name}
-            className="ab-row"
-            data-hot={hot === i}
-            onMouseEnter={() => { setHot(i); if (h.src) setShown(i); }}
-            initial={{ opacity: 0, x: i % 2 ? 80 : -80 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ root: box, once: true, margin: "-6% 0px" }}
-            transition={{ duration: 0.7, ease: [0.2, 0.8, 0.25, 1] }}
-          >
-            <span className="ab-row-name">{h.name}</span>
-            <span className="ab-row-note ab-scrawl">{h.note}</span>
-          </motion.li>
-        ))}
-      </ul>
-
-      <motion.div
-        className="ab-follow"
-        style={{ x, y, rotate: tilt }}
-        animate={{ opacity: card ? 1 : 0, scale: card ? 1 : 0.6 }}
-        transition={{ duration: 0.25 }}
-        aria-hidden="true"
-      >
-        <div className="ab-frame ab-frame-follow">
-          <span className="ab-pin" />
-          <div className="ab-frame-art">
-            {HOBBIES[shown].src && <img key={shown} src={HOBBIES[shown].src} alt="" />}
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-/* ─── 5. sign-off ─────────────────────────────────────────────────── */
-function SignOff() {
-  const box = useScrollBox();
-  return (
-    <div className="ab-end">
-      <motion.h2
-        className="ab-scrawl ab-end-h"
-        initial={{ opacity: 0, clipPath: "inset(0 100% 0 0)" }}
-        whileInView={{ opacity: 1, clipPath: "inset(0 0% 0 0)" }}
-        viewport={{ root: box, once: true, margin: "-10% 0px" }}
-        transition={{ duration: 1, ease: [0.3, 0.7, 0.2, 1] }}
-      >
-        say hi.
-      </motion.h2>
-      <ul className="ab-links">
-        {LINKS.map((l) => (
-          <li key={l.label}>
-            <a
-              href={l.href}
-              download={l.download || undefined}
-              target={l.download || l.href.startsWith("mailto") ? undefined : "_blank"}
-              rel="noopener noreferrer"
-            >
-              <span>{l.label}</span>
-              <em>{l.meta}</em>
-              <b aria-hidden="true">{l.download ? "↓" : "↗"}</b>
-            </a>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

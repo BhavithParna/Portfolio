@@ -46,7 +46,7 @@ export default function ProjectsPage() {
 
   return (
     <main>
-      <section className="sb-page" style={{ padding: 0, height: "100vh", minHeight: 640, overflow: "hidden" }}>
+      <section className="sb-page" data-dock-tone="light" style={{ padding: 0, height: "100vh", minHeight: 640, overflow: "hidden" }}>
         <span className="sb-deckle sb-deckle-bottom" />
 
         {/* Ferrofluid ink churning under the paper */}
@@ -62,7 +62,7 @@ export default function ProjectsPage() {
         />
 
         {/* Masthead */}
-        <div className={opening ? "wk-chrome wk-chrome-out" : "wk-chrome"} style={{ position: "absolute", top: "clamp(1.5rem, 4vh, 3.5rem)", left: "clamp(1.5rem, 5vw, 5.5rem)", zIndex: 5, pointerEvents: "none" }}>
+        <div className={opening ? "wk-chrome wk-chrome-out" : "wk-chrome"} style={{ position: "absolute", top: "calc(54px + clamp(1.2rem, 3vh, 2.6rem))", left: "clamp(1.5rem, 5vw, 5.5rem)", zIndex: 5, pointerEvents: "none" }}>
           <div style={{ pointerEvents: "auto" }}>
             <BackLink href="/" label="Home" />
           </div>

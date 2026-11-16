@@ -1133,3 +1133,42 @@ Each entry records the date, a summary of the change, and the files affected.
   current page's cup is poured (milk swirl, slow turn, steam); hover lifts a cup and ripples
   the coffee. No icons or images. Tone detection unchanged.
 - **Files:** `components/DockNav.tsx`, `app/globals.css` (dock block).
+
+### 2026-11-16 — About rebuilt in the Hero's language (GSAP); dock replaced by a ruled top bar
+- **Why:** Bhavith found "File Nº 01" off-style and AI-looking: handwritten ME / "proof i was
+  here" / "say hi.", the HELLO name badge, the pill tags, the faint typewriter bio, too many
+  labels and sub-headings. Asked for GSAP motion and a nav like a reference (Elian Kent).
+- **About (`About.tsx`, `about.css`, rewritten):** night navy / cream / ember, Playfair with the
+  offset outline — same as Hero and Contact. No eyebrows or section titles. Opening (photo with
+  `About` / `me` set across it, hairline columns, registration crosses) → the bio as one large
+  paragraph whose words brighten on scroll → build photos in colour on a sticky sideways reel →
+  three facts → off-hours as a running line that speeds up and skews with scroll velocity →
+  CV / GitHub / LinkedIn / Email. Halftone, ASCII portrait, film strip, badge, pills and all
+  handwriting/typewriter faces are gone from the page.
+- **Motion:** `gsap` + `@gsap/react` added (ScrollTrigger, SplitText). Every trigger uses
+  `scroller: .scene`; the reel is `position: sticky` + scrub rather than a GSAP pin. Reduced
+  motion: nothing animates (all inside `gsap.matchMedia`).
+- **Nav (`DockNav.tsx`, `.nav-*` in globals.css):** the bottom glass dock is now a 54px top bar:
+  wordmark, five mono links with an ember marker that slides along the rule, a "Get in touch"
+  cell, crosses at the gutters. Tone detection kept; Library, Workshop and project pages set
+  `data-dock-tone="light"`. Library, Workshop masthead and the Luca title were moved down 54px.
+- **Dev note:** port 3000 was another project (applix-site-redesign); the portfolio ran on 3123.
+- **Still pending:** `/bhavith-parna-cv.pdf` 404s. `/music`, `/horror`, `/hobbies` not rechecked
+  under the new bar (they already have 7rem top padding).
+
+### 2026-11-16 — About: paper opening + halftone restored; old book pages deleted
+- **About:** Bhavith wanted the light opening back. The page now opens on paper again: ghost
+  BHAVITH, the halftone portrait (dots lean from the cursor and blow apart on scroll, fed by a
+  ScrollTrigger progress ref), `About` / `me` in Playfair, then the night half rises over it as
+  a dome and the rest of the 2026-11-16 page follows. No handwriting, badge or pills.
+- **Removed:** `/horror`, `/music`, `/hobbies` (old dark pages) and the dead old-style
+  components `Life.tsx`, `Skills.tsx`, `Projects.tsx`, `ProjectCard.tsx`. In the Library the
+  Horror book plays the scare and returns to the shelf; the Soundtrack book goes to the liminal
+  404 like the rest. Only Luca and Something to Stare At open real pages.
+
+### 2026-11-16 — About: ending replaced
+- Bhavith rejected the facts rows + running hobby line + big link cells. In their place, from
+  the original page: the "definition" bio beside the live ASCII portrait, the full-width hobby
+  rows (ember fill on hover, the dog photo follows the cursor on the playlists row; notes in
+  Playfair italic instead of handwriting, no heading), and the four-link strip (no "say hi.").
+  Motion for these is GSAP (`quickTo` for the follow card).

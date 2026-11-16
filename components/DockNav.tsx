@@ -4,34 +4,31 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { House, UserRound, LibraryBig, Wrench, Mail, type LucideIcon } from "lucide-react";
 import { setScene, useScene, type Scene } from "@/lib/sceneStore";
 
 /*
-  DockNav — a glass tab bar, pinned to the bottom of every page. It never
-  hides.
+  DockNav — the site navigation: a ruled bar across the top of every page.
+  Wordmark on the left, five mono links in the middle, one call cell on the
+  right, all sitting on a hairline with a registration cross at each gutter.
+  An ember marker rides the rule under the current page and slides between
+  links.
 
-  One capsule of clear glass holding five tabs (icon over a small label).
-  A brighter lens of glass sits behind the current tab and slides to the
-  next one with a spring when you navigate. Icons swell slightly on hover
-  and squish on press.
-
-  The glass adapts: it reads what's underneath (a `data-dock-tone` attribute
+  The bar adapts: it reads what's underneath (a `data-dock-tone` attribute
   if a section sets one, otherwise the first solid background it finds) and
-  switches between a light and a dark pane.
+  switches between cream-on-night and ink-on-paper.
 
-  Scene tabs swap the home stage (navigating home first if needed); the
-  workshop tab is a page link.
+  Scene links swap the home stage (navigating home first if needed); the
+  workshop link is a page link.
 */
 
-type Item = { id: string; label: string; Icon: LucideIcon; scene?: Scene; href?: string };
+type Item = { id: string; label: string; scene?: Scene; href?: string };
 
 const ITEMS: Item[] = [
-  { id: "home", scene: "home", label: "Home", Icon: House },
-  { id: "about", scene: "about", label: "About", Icon: UserRound },
-  { id: "library", scene: "library", label: "Library", Icon: LibraryBig },
-  { id: "workshop", href: "/projects", label: "Workshop", Icon: Wrench },
-  { id: "contact", scene: "contact", label: "Contact", Icon: Mail },
+  { id: "home", scene: "home", label: "Home" },
+  { id: "about", scene: "about", label: "About" },
+  { id: "library", scene: "library", label: "Library" },
+  { id: "workshop", href: "/projects", label: "Workshop" },
+  { id: "contact", scene: "contact", label: "Contact" },
 ];
 
 type Tone = "light" | "dark";
@@ -61,7 +58,7 @@ export default function DockNav() {
   const pathname = usePathname();
   const router = useRouter();
   const scene = useScene();
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLElement>(null);
   const [tone, setTone] = useState<Tone>("dark");
 
   // Re-read the backdrop on scroll (any scroller), resize, and page changes.
@@ -94,46 +91,43 @@ export default function DockNav() {
   };
 
   return (
-    <div className="dock-wrap" ref={wrapRef} data-tone={tone}>
-      <motion.nav
-        className="dock"
-        aria-label="Site navigation"
-        initial={{ y: 90, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 170, damping: 20, delay: 0.25 }}
-      >
+    <motion.header
+      className="nav-wrap"
+      ref={wrapRef}
+      data-tone={tone}
+      initial={{ y: -60, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.7, ease: [0.2, 0.8, 0.25, 1], delay: 0.25 }}
+    >
+      <button type="button" className="nav-brand" onClick={() => onScene("home")} aria-label="Bhavith Parna, home">
+        Bhavith <em>Parna</em>
+      </button>
+
+      <nav className="nav-links" aria-label="Site navigation">
         {ITEMS.map((item) => {
           const active = item.scene ? pathname === "/" && scene === item.scene : pathname.startsWith(item.href ?? "~");
           const inner = (
             <>
+              {item.label}
               {active && (
                 <motion.span
-                  layoutId="dock-lens"
-                  className="dock-lens"
-                  transition={{ type: "spring", stiffness: 380, damping: 30, mass: 0.9 }}
+                  layoutId="nav-mark"
+                  className="nav-mark"
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   aria-hidden="true"
                 />
               )}
-              <motion.span
-                className="dock-icon"
-                whileHover={{ scale: 1.14, y: -1 }}
-                whileTap={{ scale: 0.86 }}
-                transition={{ type: "spring", stiffness: 420, damping: 18 }}
-              >
-                <item.Icon size={21} strokeWidth={active ? 2.1 : 1.7} aria-hidden="true" />
-              </motion.span>
-              <span className="dock-word">{item.label}</span>
             </>
           );
           return item.href ? (
-            <Link key={item.id} href={item.href} className="dock-btn" data-active={active} aria-current={active ? "page" : undefined}>
+            <Link key={item.id} href={item.href} className="nav-link" data-active={active} aria-current={active ? "page" : undefined}>
               {inner}
             </Link>
           ) : (
             <button
               key={item.id}
               type="button"
-              className="dock-btn"
+              className="nav-link"
               data-active={active}
               aria-current={active ? "page" : undefined}
               onClick={() => item.scene && onScene(item.scene)}
@@ -142,7 +136,14 @@ export default function DockNav() {
             </button>
           );
         })}
-      </motion.nav>
-    </div>
+      </nav>
+
+      <button type="button" className="nav-cta" onClick={() => onScene("contact")}>
+        Get in touch <span aria-hidden="true">→</span>
+      </button>
+
+      <i className="nav-cross" data-side="l" aria-hidden="true" />
+      <i className="nav-cross" data-side="r" aria-hidden="true" />
+    </motion.header>
   );
 }

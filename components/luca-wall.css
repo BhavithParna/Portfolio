@@ -77,7 +77,7 @@
     radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(5, 11, 21, 0.55) 100%);
 }
 
-.lw-title { position: absolute; left: clamp(1.2rem, 3.2vw, 3rem); top: clamp(1rem, 3vh, 2.2rem); pointer-events: none; }
+.lw-title { position: absolute; left: clamp(1.2rem, 3.2vw, 3rem); top: calc(54px + clamp(1rem, 3vh, 2.2rem)); pointer-events: none; }
 .lw-title h1 {
   font-family: 'Playfair Display', serif;
   font-style: italic;
@@ -154,7 +154,7 @@
 .lw-nav { top: 50%; margin-top: -1.5rem; }
 .lw-prev { left: clamp(0.8rem, 2.5vw, 2.5rem); }
 .lw-next { right: clamp(0.8rem, 2.5vw, 2.5rem); }
-.lw-close { top: clamp(0.8rem, 2.5vh, 2rem); right: clamp(0.8rem, 2.5vw, 2.5rem); font-size: 1.6rem; }
+.lw-close { top: calc(54px + clamp(0.8rem, 2.5vh, 2rem)); right: clamp(0.8rem, 2.5vw, 2.5rem); font-size: 1.6rem; }
 
 @media (max-width: 700px) {
   .lw-nav { top: auto; bottom: 5.4rem; margin: 0; }

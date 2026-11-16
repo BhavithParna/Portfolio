@@ -967,116 +967,132 @@ body {
   .lib-pointer, .lib-pointer-line, .lib-pointer-head { animation: none; }
 }
 
-/* ─── Dock navigation: liquid-glass tab bar (.dock-*) ────────────
-   `data-tone` (set by DockNav from whatever is underneath) swaps light and
-   dark glass. */
+/* ─── Site navigation: a ruled top bar (.nav-*) ──────────────────
+   Wordmark · five links · one call cell, on a hairline with registration
+   crosses. `data-tone` (set by DockNav from whatever is underneath) swaps
+   cream-on-night and ink-on-paper. */
 
-.dock-wrap {
-  /* dark tone (default): night skies, photos, navy */
-  --dock-fg: #ffffff;
-  --dock-fg-dim: rgba(255, 255, 255, 0.66);
-  --dock-glass: rgba(120, 130, 150, 0.16);
-  --dock-tint: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.02) 55%, rgba(255, 255, 255, 0.07));
-  --dock-rim: linear-gradient(140deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.1) 32%, rgba(255, 255, 255, 0.06) 62%, rgba(255, 255, 255, 0.5));
-  --dock-inner: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -10px 18px -12px rgba(255, 255, 255, 0.22);
-  --dock-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.6), 0 6px 16px -4px rgba(0, 0, 0, 0.3);
-  --dock-filter: blur(22px) saturate(1.9) brightness(1.08);
-  --lens-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.13));
-  --lens-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.55), inset 0 -1px 1px rgba(255, 255, 255, 0.12), 0 6px 14px -6px rgba(0, 0, 0, 0.45);
+.nav-wrap {
+  --nav-fg: #f4ecd8;
+  --nav-dim: rgba(244, 236, 216, 0.62);
+  --nav-rule: rgba(244, 236, 216, 0.22);
+  --nav-bg: rgba(10, 24, 42, 0.74);
+  --nav-accent: #e8763f;
+  --nav-h: 54px;
 
   position: fixed;
-  bottom: max(1.1rem, env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 40;
-}
-.dock-wrap[data-tone="light"] {
-  --dock-fg: #0d1524;
-  --dock-fg-dim: rgba(13, 21, 36, 0.68);
-  --dock-glass: rgba(250, 247, 240, 0.74);
-  --dock-tint: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.18) 55%, rgba(255, 255, 255, 0.4));
-  --dock-rim: linear-gradient(140deg, #ffffff, rgba(255, 255, 255, 0.5) 32%, rgba(255, 255, 255, 0.35) 62%, #ffffff);
-  --dock-inner: inset 0 1px 1px #ffffff, inset 0 -10px 18px -12px rgba(255, 255, 255, 0.9);
-  --dock-shadow: 0 22px 44px -18px rgba(40, 32, 18, 0.38), 0 4px 12px -2px rgba(40, 32, 18, 0.12), 0 0 0 1px rgba(13, 21, 36, 0.06);
-  --dock-filter: blur(30px) saturate(1.6) brightness(1.06);
-  --lens-bg: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, 0.82));
-  --lens-shadow: inset 0 1px 0 #ffffff, 0 6px 14px -6px rgba(40, 32, 18, 0.35), 0 0 0 1px rgba(13, 21, 36, 0.05);
-}
-
-.dock {
-  position: relative;
-  display: flex;
+  height: var(--nav-h);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: stretch;
-  gap: 2px;
-  padding: 6px;
-  border-radius: 999px;
-  background: var(--dock-tint), var(--dock-glass);
-  backdrop-filter: var(--dock-filter);
-  -webkit-backdrop-filter: var(--dock-filter);
-  box-shadow: var(--dock-inner), var(--dock-shadow);
-  transition: background 0.45s ease, box-shadow 0.45s ease;
+  padding: 0 clamp(1rem, 2.6vw, 2.5rem);
+  color: var(--nav-fg);
+  background: var(--nav-bg);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border-bottom: 1px solid var(--nav-rule);
+  transition: background 0.45s ease, color 0.45s ease, border-color 0.45s ease;
 }
-/* the rim: a hairline that catches light at two corners */
-.dock::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: var(--dock-rim);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  pointer-events: none;
+.nav-wrap[data-tone="light"] {
+  --nav-fg: #1d2433;
+  --nav-dim: rgba(29, 36, 51, 0.62);
+  --nav-rule: rgba(29, 36, 51, 0.2);
+  --nav-bg: rgba(243, 236, 221, 0.93);
+  --nav-accent: #b9471d;
 }
 
-.dock-btn {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  width: 72px;
-  height: 54px;
+/* registration crosses where the rule meets the gutters */
+.nav-cross {
+  position: absolute;
+  bottom: -6px;
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--nav-fg), var(--nav-fg)) center / 100% 1px no-repeat,
+    linear-gradient(var(--nav-fg), var(--nav-fg)) center / 1px 100% no-repeat;
+  opacity: 0.8;
+}
+.nav-cross[data-side="l"] { left: calc(clamp(1rem, 2.6vw, 2.5rem) - 5px); }
+.nav-cross[data-side="r"] { right: calc(clamp(1rem, 2.6vw, 2.5rem) - 5px); }
+
+.nav-brand, .nav-link, .nav-cta {
   background: none;
   border: none;
   margin: 0;
   padding: 0;
-  border-radius: 999px;
+  color: inherit;
   cursor: pointer;
   text-decoration: none;
-  color: var(--dock-fg-dim);
-  transition: color 0.25s ease;
   -webkit-tap-highlight-color: transparent;
 }
-.dock-btn:hover, .dock-btn[data-active="true"] { color: var(--dock-fg); }
-.dock-btn:focus-visible { outline: 2px solid var(--dock-fg); outline-offset: 2px; }
-
-.dock-icon { position: relative; display: grid; place-items: center; line-height: 0; }
-.dock-word {
-  position: relative;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.66rem;
-  font-weight: 500;
-  letter-spacing: 0.005em;
+.nav-brand {
+  justify-self: start;
+  align-self: center;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.22rem;
+  letter-spacing: 0.01em;
   line-height: 1;
+  white-space: nowrap;
 }
-.dock-btn[data-active="true"] .dock-word { font-weight: 600; }
+.nav-brand em { font-style: italic; font-weight: 600; color: var(--nav-accent); }
 
-/* the lens: a brighter bead of glass behind the current tab */
-.dock-lens {
+.nav-links { display: flex; align-items: stretch; gap: clamp(1.1rem, 2.4vw, 2.4rem); }
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nav-dim);
+  transition: color 0.25s ease;
+}
+.nav-link:hover, .nav-link[data-active="true"] { color: var(--nav-fg); }
+.nav-link:focus-visible, .nav-brand:focus-visible, .nav-cta:focus-visible { outline: 1px solid var(--nav-fg); outline-offset: 4px; }
+/* the marker: an ember bar that rides the rule under the current page */
+.nav-mark {
   position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: var(--lens-bg);
-  box-shadow: var(--lens-shadow);
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--nav-accent);
 }
 
-@media (max-width: 640px) {
-  .dock-btn { width: 62px; height: 52px; }
+.nav-cta {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.5rem;
+  min-width: clamp(11rem, 17vw, 16rem);
+  padding: 0 0 0 1.4rem;
+  border-left: 1px solid var(--nav-rule);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: color 0.25s ease;
+}
+.nav-cta span { display: inline-block; font-family: 'Inter', system-ui, sans-serif; font-size: 1rem; letter-spacing: 0; transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.25, 1); }
+.nav-cta:hover { color: var(--nav-accent); }
+.nav-cta:hover span { transform: translateX(6px); }
+
+@media (max-width: 820px) {
+  .nav-wrap { grid-template-columns: 1fr; }
+  .nav-brand, .nav-cta { display: none; }
+  .nav-links { justify-content: space-between; gap: 0.5rem; }
+  .nav-link { font-size: 0.64rem; letter-spacing: 0.1em; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .dock { transition: none; }
+  .nav-wrap { transition: none; }
 }
-
